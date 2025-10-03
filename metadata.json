@@ -1,0 +1,5 @@
+{
+  "name": "Cleaner, Safer Skies",
+  "description": "An interactive web application to understand and act on local air quality forecasts by integrating satellite, ground-based, and weather data. Provides real-time maps, forecasts, health alerts, and historical trends.",
+  "requestFramePermissions": []
+}
