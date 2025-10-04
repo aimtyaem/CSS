@@ -1,20 +1,43 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# CSS: Command Center
 
-# Run and deploy your AI Studio app
+An interactive web application to understand and act on local air quality forecasts by integrating satellite, ground-based, and weather data. This application provides real-time maps, forecasts, health alerts, and historical trends in a user-friendly command center interface.
 
-This contains everything you need to run your app locally.
+## ✨ Key Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1RwfZk9jX2bo5pAiBkE2KU4CzleZUpbrq
+*   **Interactive Map View:** Visualize air quality data for different pollutants on a dynamic map. Search for locations and get real-time AQI readings.
+*   **Detailed Forecasts:** Get 24-hour and 7-day air quality and weather forecasts for any selected location.
+*   **Customizable Alerts:** Set up personalized notifications for specific pollutants and AQI thresholds.
+*   **Historical Trends:** Analyze historical air quality data to understand long-term trends and patterns.
+*   **Persona-Based Settings:** Tailor the application's experience to your specific role, whether you're a resident, a public health official, or a tourism professional.
 
-## Run Locally
+## 🛠️ Tech Stack
 
-**Prerequisites:**  Node.js
+*   **Frontend:** [React](https://react.dev/) & [TypeScript](https://www.typescriptlang.org/)
+*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+*   **Mapping:** [Leaflet](https://leafletjs.com/)
+*   **Charting:** [Recharts](https://recharts.org/)
 
+## 🚀 Getting Started
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+To run this application, simply open the `index.html` file in your web browser. All dependencies are loaded via CDNs, and the application is self-contained.
+
+## 📂 Project Structure
+
+The project is organized into the following main directories and files:
+
+```
+/
+├── components/         # Contains all React components (Sidebar, MapView, etc.)
+├── App.tsx             # Main application component, handles state and view rendering
+├── index.tsx           # Entry point for the React application
+├── types.ts            # TypeScript type definitions
+├── constants.ts        # Application-wide constants (pollutants, colors, etc.)
+├── index.html          # The main HTML file
+└── metadata.json       # Project metadata
+```
+
+## 📊 Data Sources
+
+This application currently uses curated mock data to simulate real-world air quality information for demonstration purposes. The data represents a combination of:
+*   **Satellite Data:** Simulating feeds from sources like the TEMPO mission.
+*   **Ground Stations:** Simulating data from public and private ground-based sensors.
