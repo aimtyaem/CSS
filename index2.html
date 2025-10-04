@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Air Quality & Safety Prediction Platform</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    :root {
+      --primary: #0c1b2e;
+      --secondary: #162b3e;
+      --accent: #4fc3f7;
+      --danger: #f44336;
+      --warning: #ffc107;
+      --success: #4caf50;
+      --text: #ffffff;
+      --text-secondary: #a0c4e0;
+      --card-bg: rgba(16, 30, 46, 0.95);
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    .high-contrast {
+      --primary: #000000;
+      --secondary: #222222;
+      --accent: #00ffff;
+      --danger: #ff0000;
+      --warning: #ffff00;
+      --success: #00ff00;
+      --text: #ffffff;
+      --text-secondary: #cccccc;
+      --card-bg: rgba(0, 0, 0, 0.9);
+      --border: rgba(255, 255, 255, 0.3);
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .large-text {
+      font-size: 1.2em;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      width: 320px;
+      background: var(--card-bg);
+      padding: 25px;
+      border-right: 1px solid var(--border);
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
+      overflow-y: auto;
+      z-index: 10;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar.collapsed {
+      width: 60px;
+      padding: 25px 10px;
+    }
+
+    .sidebar.collapsed .logo h1,
+    .sidebar.collapsed .logo p,
+    .sidebar.collapsed .search-box,
+    .sidebar.collapsed .section-title span,
+    .sidebar.collapsed .pollutant-name,
+    .sidebar.collapsed .model-selector,
+    .sidebar.collapsed .timeframe-selector,
+    .sidebar.collapsed .menu-bottom div span {
+      display: none;
+    }
+
+    .logo {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+    }
+
+    .logo h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 5px;
+      color: var(--accent);
+    }
+
+    .logo p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .collapse-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 25px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 15px 12px 45px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(30, 45, 65, 0.8);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .search-box input:focus {
+      background: rgba(40, 60, 85, 0.9);
+      box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.5);
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+    }
+
+    .search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      border-radius: 0 0 8px 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+    }
+
+    .search-result-item {
+      padding: 10px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-result-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+    }
+
+    .section-title i {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+
+    .pollutants-list {
+      list-style: none;
+    }
+
+    .pollutants-list li {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pollutants-list li:hover {
+      background: rgba(255, 255, 255, 0.05);
+      padding-left: 10px;
+      border-radius: 5px;
+    }
+
+    .pollutants-list li.active {
+      background: rgba(79, 195, 247, 0.1);
+      padding-left: 10px;
+      border-radius: 5px;
+    }
+
+    .pollutant-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      font-size: 14px;
+    }
+
+    .pm25 { background: rgba(244, 67, 54, 0.2); color: var(--danger); }
+    .o3 { background: rgba(255, 193, 7, 0.2); color: var(--warning); }
+    .no2 { background: rgba(156, 39, 176, 0.2); color: #9c27b0; }
+    .so2 { background: rgba(3, 169, 244, 0.2); color: #03a9f4; }
+
+    .model-selector, .timeframe-selector {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(30, 45, 65, 0.8);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .model-selector:focus, .timeframe-selector:focus {
+      background: rgba(40, 60, 85, 0.9);
+      box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.5);
+    }
+
+    .menu-bottom {
+      margin-top: 50px;
+      color: var(--text-secondary);
+    }
+
+    .menu-bottom div {
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+
+    .menu-bottom div i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+
+    /* Main Content Styles */
+    .main-content {
+      flex: 1;
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .date-display {
+      background: rgba(30, 45, 65, 0.8);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .accessibility-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .accessibility-btn {
+      background: rgba(30, 45, 65, 0.8);
+      border: none;
+      color: var(--text-secondary);
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .accessibility-btn:hover {
+      background: rgba(40, 60, 85, 0.9);
+      color: var(--accent);
+    }
+
+    .user-menu {
+      position: relative;
+    }
+
+    .user-btn {
+      background: rgba(30, 45, 65, 0.8);
+      border: none;
+      color: var(--text);
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .user-btn:hover {
+      background: rgba(40, 60, 85, 0.9);
+    }
+
+    .user-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 5px;
+      min-width: 200px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      display: none;
+      z-index: 100;
+    }
+
+    .user-dropdown.active {
+      display: block;
+    }
+
+    .user-dropdown div {
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: all 0.2s;
+    }
+
+    .user-dropdown div:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .map-container {
+      flex: 1;
+      background: rgba(16, 30, 46, 0.7);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+    }
+
+    .map-controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 500;
+    }
+
+    .map-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      z-index: 500;
+    }
+
+    .map-btn:hover {
+      background: rgba(40, 60, 85, 0.9);
+      color: var(--accent);
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .location-card {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 20px;
+      min-width: 280px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      z-index: 400;
+      display: none;
+    }
+
+    .location-card.active {
+      display: block;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .location-info h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 5px;
+    }
+
+    .location-info .location-details {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .aqi-display {
+      text-align: center;
+    }
+
+    .aqi-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin: 10px 0;
+    }
+
+    .health-status {
+      font-size: 14px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      display: inline-block;
+      font-weight: 600;
+    }
+
+    .good { background: rgba(76, 175, 80, 0.2); color: var(--success); }
+    .moderate { background: rgba(255, 193, 7, 0.2); color: var(--warning); }
+    .unhealthy-sensitive { background: rgba(255, 152, 0, 0.2); color: #ff9800; }
+    .unhealthy { background: rgba(244, 67, 54, 0.2); color: var(--danger); }
+    .very-unhealthy { background: rgba(156, 39, 176, 0.2); color: #9c27b0; }
+    .hazardous { background: rgba(126, 87, 0, 0.2); color: #7e5700; }
+
+    .recommendations {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+    }
+
+    .recommendations h4 {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+
+    .recommendations p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .card-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 16px;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .pollutant-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .pollutant-item {
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .pollutant-value {
+      font-weight: 600;
+    }
+
+    .last-updated {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--accent);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .legend {
+      position: absolute;
+      bottom: 25px;
+      left: 25px;
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 8px;
+      min-width: 250px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      z-index: 400;
+    }
+
+    .legend-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-size: 14px;
+    }
+
+    .legend-scale {
+      height: 10px;
+      background: linear-gradient(to right, var(--success), var(--warning), var(--danger));
+      border-radius: 5px;
+      margin-bottom: 8px;
+    }
+
+    .legend-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .hazards {
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 10px;
+    }
+
+    .hazards-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--danger);
+      font-size: 13px;
+    }
+
+    .hazard-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+
+    .hazard-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(244, 67, 54, 0.2);
+      color: var(--danger);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 8px;
+      font-size: 10px;
+    }
+
+    .alert-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--danger);
+      color: white;
+      padding: 15px;
+      text-align: center;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .alert-close {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .help-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent);
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      z-index: 100;
+    }
+
+    .onboarding-tour {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      display: none;
+    }
+
+    .tour-content {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 500px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .tour-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .tour-btn {
+      background: rgba(30, 45, 65, 0.8);
+      border: none;
+      color: var(--text);
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .tour-btn:hover {
+      background: rgba(40, 60, 85, 0.9);
+    }
+
+    .tour-btn.primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .tour-btn.primary:hover {
+      background: #29b6f6;
+    }
+
+    @media (max-width: 1100px) {
+      .container {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .location-card {
+        position: relative;
+        top: auto;
+        left: auto;
+        margin: 15px;
+        width: calc(100% - 30px);
+      }
+
+      .legend {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        margin: 15px;
+        width: calc(100% - 30px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .header-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .pollutant-details {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Enhanced marker styles */
+    .aqi-marker {
+      transition: all 0.3s ease;
+    }
+
+    .aqi-marker:hover {
+      transform: scale(1.2);
+      z-index: 1000 !important;
+    }
+
+    /* Enhanced search results */
+    .search-results {
+      border: 1px solid var(--border);
+      border-top: none;
+    }
+
+    /* Enhanced interactive states */
+    .map-btn:hover, .accessibility-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .search-result-item:hover {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Alert Banner -->
+  <div class="alert-banner" id="alertBanner" style="display: none;">
+    <div>
+      <i class="fas fa-exclamation-triangle"></i>
+      <span id="alertText">High pollution alert - Air quality levels are dangerous in some areas</span>
+    </div>
+    <button class="alert-close" id="alertClose">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <!-- Onboarding Tour -->
+  <div class="onboarding-tour" id="onboardingTour">
+    <div class="tour-content">
+      <h2>Welcome to the Global Air Quality Platform</h2>
+      <p id="tourText">This interactive tour will guide you through the main features of the platform. Let's get started!</p>
+      <div class="tour-nav">
+        <button class="tour-btn" id="tourPrev">Previous</button>
+        <button class="tour-btn primary" id="tourNext">Next</button>
+        <button class="tour-btn" id="tourSkip" style="display: none;">Skip Tour</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="logo">
+        <div>
+          <h1>Cleaner, Safer Skies</h1>
+          <p>Global Air Quality Monitoring</p>
+        </div>
+        <button class="collapse-btn" id="collapseBtn">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      </div>
+      
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search countries, cities..." id="searchInput">
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">
+          <i class="fas fa-smog"></i>
+          <span>Pollutants</span>
+        </div>
+        <ul class="pollutants-list">
+          <li class="active">
+            <div class="pollutant-icon pm25">
+              <i class="fas fa-wind"></i>
+            </div>
+            <div>
+              <div class="pollutant-name">Particulate Matter (PM2.5)</div>
+              <div style="font-size: 12px; color: var(--text-secondary);" id="pm25-value">-- µg/m³</div>
+            </div>
+          </li>
+          <li>
+            <div class="pollutant-icon o3">
+              <i class="fas fa-cloud"></i>
+            </div>
+            <div>
+              <div class="pollutant-name">Ozone (O3)</div>
+              <div style="font-size: 12px; color: var(--text-secondary);" id="o3-value">-- µg/m³</div>
+            </div>
+          </li>
+          <li>
+            <div class="pollutant-icon no2">
+              <i class="fas fa-industry"></i>
+            </div>
+            <div>
+              <div class="pollutant-name">Nitrogen Dioxide (NO2)</div>
+              <div style="font-size: 12px; color: var(--text-secondary);" id="no2-value">-- µg/m³</div>
+            </div>
+          </li>
+          <li>
+            <div class="pollutant-icon so2">
+              <i class="fas fa-fire"></i>
+            </div>
+            <div>
+              <div class="pollutant-name">Sulphur Dioxide (SO2)</div>
+              <div style="font-size: 12px; color: var(--text-secondary);" id="so2-value">-- µg/m³</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">
+          <i class="fas fa-chart-line"></i>
+          <span>Data Source</span>
+        </div>
+        <select class="model-selector" id="dataSource">
+          <option value="waqi">World Air Quality Index</option>
+          <option value="openweather">OpenWeather Map</option>
+        </select>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">
+          <i class="fas fa-clock"></i>
+          <span>Update Frequency</span>
+        </div>
+        <select class="timeframe-selector" id="updateFrequency">
+          <option value="300000">5 minutes</option>
+          <option value="600000">10 minutes</option>
+          <option value="1800000">30 minutes</option>
+          <option value="3600000">1 hour</option>
+        </select>
+      </div>
+
+      <div class="menu-bottom">
+        <div>
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </div>
+        <div>
+          <i class="fas fa-question-circle"></i>
+          <span>Help</span>
+        </div>
+        <div>
+          <i class="fas fa-info-circle"></i>
+          <span>About</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="header">
+        <h2>Global Air Quality & Safety Monitoring</h2>
+        <div class="header-controls">
+          <div class="date-display">
+            <i class="far fa-calendar"></i> <span id="currentDate">--</span>
+          </div>
+          <div class="accessibility-controls">
+            <button class="accessibility-btn" id="contrastToggle" title="Toggle High Contrast">
+              <i class="fas fa-adjust"></i>
+            </button>
+            <button class="accessibility-btn" id="textSizeToggle" title="Toggle Large Text">
+              <i class="fas fa-text-height"></i>
+            </button>
+          </div>
+          <div class="user-menu">
+            <button class="user-btn" id="userMenuBtn">
+              <i class="fas fa-user"></i>
+              <span>User Profile</span>
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="user-dropdown" id="userDropdown">
+              <div><i class="fas fa-user-circle"></i> My Account</div>
+              <div><i class="fas fa-bell"></i> Notifications</div>
+              <div><i class="fas fa-history"></i> Recent Activity</div>
+              <div><i class="fas fa-cog"></i> Preferences</div>
+              <div><i class="fas fa-sign-out-alt"></i> Logout</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="map-container">
+        <div class="map-controls">
+          <button class="map-btn" id="zoomIn" title="Zoom In">
+            <i class="fas fa-plus"></i>
+          </button>
+          <button class="map-btn" id="zoomOut" title="Zoom Out">
+            <i class="fas fa-minus"></i>
+          </button>
+          <button class="map-btn" id="resetView" title="Reset View">
+            <i class="fas fa-crosshairs"></i>
+          </button>
+          <button class="map-btn" id="locateMe" title="Locate Me">
+            <i class="fas fa-location-arrow"></i>
+          </button>
+        </div>
+        
+        <div id="map"></div>
+        
+        <!-- Location Card -->
+        <div class="location-card" id="locationCard">
+          <div class="card-header">
+            <div class="location-info">
+              <h3 id="cardCity">--</h3>
+              <div class="location-details" id="cardCountry">--</div>
+            </div>
+            <button class="card-close" id="cardClose">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          
+          <div class="aqi-display">
+            <div>Air Quality Index</div>
+            <div class="aqi-value" id="cardAqi">--</div>
+            <div class="health-status" id="cardStatus">--</div>
+          </div>
+          
+          <div class="pollutant-details">
+            <div class="pollutant-item">
+              <span>PM2.5:</span>
+              <span class="pollutant-value" id="cardPm25">-- µg/m³</span>
+            </div>
+            <div class="pollutant-item">
+              <span>PM10:</span>
+              <span class="pollutant-value" id="cardPm10">-- µg/m³</span>
+            </div>
+            <div class="pollutant-item">
+              <span>O3:</span>
+              <span class="pollutant-value" id="cardO3">-- µg/m³</span>
+            </div>
+            <div class="pollutant-item">
+              <span>NO2:</span>
+              <span class="pollutant-value" id="cardNo2">-- µg/m³</span>
+            </div>
+            <div class="pollutant-item">
+              <span>SO2:</span>
+              <span class="pollutant-value" id="cardSo2">-- µg/m³</span>
+            </div>
+            <div class="pollutant-item">
+              <span>CO:</span>
+              <span class="pollutant-value" id="cardCo">-- µg/m³</span>
+            </div>
+          </div>
+          
+          <div class="recommendations">
+            <h4>Health Recommendations</h4>
+            <p id="cardRecommendations">--</p>
+          </div>
+          
+          <div class="last-updated" id="cardUpdated">Last updated: --</div>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend">
+          <div class="legend-title">Air Quality Index (AQI)</div>
+          <div class="legend-scale"></div>
+          <div class="legend-labels">
+            <span>Good</span>
+            <span>Moderate</span>
+            <span>Unhealthy</span>
+          </div>
+          <div class="hazards">
+            <div class="hazards-title">Potential Hazards</div>
+            <div class="hazard-item">
+              <div class="hazard-icon">
+                <i class="fas fa-exclamation"></i>
+              </div>
+              <div>Respiratory Issues</div>
+            </div>
+            <div class="hazard-item">
+              <div class="hazard-icon">
+                <i class="fas fa-exclamation"></i>
+              </div>
+              <div>Reduced Visibility</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Button -->
+  <div class="help-icon" id="helpIcon">
+    <i class="fas fa-question"></i>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Map and application state
+    let map;
+    let aqiData = {};
+    let updateInterval;
+    let currentMarker;
+    let currentApiSource = 'waqi';
+    let apiToken = 'demo'; // Replace with your actual API token
+
+    // DOM Elements
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const locationCard = document.getElementById('locationCard');
+    const cardClose = document.getElementById('cardClose');
+    const collapseBtn = document.getElementById('collapseBtn');
+    const sidebar = document.getElementById('sidebar');
+    const dataSource = document.getElementById('dataSource');
+    const updateFrequency = document.getElementById('updateFrequency');
+
+    // Initialize the application when DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      initMap();
+      setupEventListeners();
+      startDataPolling();
+      updateDateTime();
+      setInterval(updateDateTime, 60000); // Update time every minute
+      
+      // Show onboarding tour for first-time users
+      if (!localStorage.getItem('tourCompleted')) {
+        setTimeout(() => {
+          startTour();
+        }, 2000);
+      }
+    });
+
+    // Initialize the map
+    function initMap() {
+      // Create map centered on the world
+      map = L.map('map').setView([20, 0], 2);
+      
+      // Add tile layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      
+      // Add click handler to map
+      map.on('click', function(e) {
+        // When map is clicked, fetch data for that location
+        fetchAirQualityData(e.latlng.lat, e.latlng.lng, 'Selected Location', '');
+      });
+      
+      // Add initial markers for major cities
+      addInitialMarkers();
+    }
+
+    // Add initial markers for major cities worldwide
+    function addInitialMarkers() {
+      const majorCities = [
+        { name: "Cairo", country: "Egypt", lat: 30.0444, lon: 31.2357 },
+        { name: "London", country: "United Kingdom", lat: 51.5074, lon: -0.1278 },
+        { name: "New York", country: "United States", lat: 40.7128, lon: -74.0060 },
+        { name: "Tokyo", country: "Japan", lat: 35.6762, lon: 139.6503 },
+        { name: "Delhi", country: "India", lat: 28.6139, lon: 77.2090 },
+        { name: "Beijing", country: "China", lat: 39.9042, lon: 116.4074 },
+        { name: "Paris", country: "France", lat: 48.8566, lon: 2.3522 },
+        { name: "Sydney", country: "Australia", lat: -33.8688, lon: 151.2093 },
+        { name: "Mexico City", country: "Mexico", lat: 19.4326, lon: -99.1332 },
+        { name: "São Paulo", country: "Brazil", lat: -23.5505, lon: -46.6333 }
+      ];
+      
+      // Fetch data for each city and add markers
+      majorCities.forEach(city => {
+        fetchAirQualityData(city.lat, city.lon, city.name, city.country);
+      });
+    }
+
+    // Set up event listeners
+    function setupEventListeners() {
+      // Search functionality
+      searchInput.addEventListener('input', handleSearchInput);
+      searchInput.addEventListener('focus', showSearchResults);
+      
+      // Close search results when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+          searchResults.style.display = 'none';
+        }
+      });
+      
+      // Close location card
+      cardClose.addEventListener('click', () => {
+        locationCard.classList.remove('active');
+      });
+      
+      // Sidebar collapse
+      collapseBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+        this.querySelector('i').classList.toggle('fa-chevron-left');
+        this.querySelector('i').classList.toggle('fa-chevron-right');
+      });
+      
+      // Map controls
+      document.getElementById('zoomIn').addEventListener('click', () => {
+        map.zoomIn();
+      });
+      
+      document.getElementById('zoomOut').addEventListener('click', () => {
+        map.zoomOut();
+      });
+      
+      document.getElementById('resetView').addEventListener('click', () => {
+        map.setView([20, 0], 2);
+      });
+      
+      document.getElementById('locateMe').addEventListener('click', locateUser);
+      
+      // Data source change
+      dataSource.addEventListener('change', function() {
+        currentApiSource = this.value;
+        // Refresh all markers with new data source
+        refreshAllMarkers();
+      });
+      
+      // Update frequency change
+      updateFrequency.addEventListener('change', () => {
+        clearInterval(updateInterval);
+        startDataPolling();
+      });
+      
+      // Accessibility controls
+      document.getElementById('contrastToggle').addEventListener('click', function() {
+        document.body.classList.toggle('high-contrast');
+      });
+      
+      document.getElementById('textSizeToggle').addEventListener('click', function() {
+        document.body.classList.toggle('large-text');
+      });
+      
+      // User menu
+      document.getElementById('userMenuBtn').addEventListener('click', function() {
+        document.getElementById('userDropdown').classList.toggle('active');
+      });
+      
+      // Close user menu when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!document.getElementById('userMenuBtn').contains(e.target) && 
+            !document.getElementById('userDropdown').contains(e.target)) {
+          document.getElementById('userDropdown').classList.remove('active');
+        }
+      });
+      
+      // Alert close
+      document.getElementById('alertClose').addEventListener('click', function() {
+        document.getElementById('alertBanner').style.display = 'none';
+      });
+      
+      // Pollutant list interaction
+      document.querySelectorAll('.pollutants-list li').forEach(item => {
+        item.addEventListener('click', function() {
+          document.querySelectorAll('.pollutants-list li').forEach(i => i.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+    }
+
+    // Handle search input
+    function handleSearchInput(e) {
+      const query = e.target.value.trim();
+      
+      if (query.length < 2) {
+        searchResults.style.display = 'none';
+        return;
+      }
+      
+      // Use OpenStreetMap Nominatim for geocoding
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10`)
+        .then(response => response.json())
+        .then(data => {
+          displaySearchResults(data);
+        })
+        .catch(error => {
+          console.error('Error fetching search results:', error);
+          // Fallback to mock data if API fails
+          useMockSearchResults(query);
+        });
+    }
+
+    // Display search results from Nominatim
+    function displaySearchResults(results) {
+      if (results.length === 0) {
+        searchResults.innerHTML = '<div class="search-result-item">No locations found</div>';
+      } else {
+        searchResults.innerHTML = results.map(location => 
+          `<div class="search-result-item" data-lat="${location.lat}" data-lon="${location.lon}" data-name="${location.display_name}">
+            ${location.display_name}
+          </div>`
+        ).join('');
+        
+        // Add click event listeners to result items
+        document.querySelectorAll('.search-result-item').forEach(item => {
+          item.addEventListener('click', function() {
+            const lat = parseFloat(this.getAttribute('data-lat'));
+            const lon = parseFloat(this.getAttribute('data-lon'));
+            const name = this.getAttribute('data-name');
+            
+            // Center map on selected location
+            map.setView([lat, lon], 10);
+            
+            // Extract city and country from display name
+            const nameParts = name.split(',');
+            const city = nameParts[0] || 'Unknown';
+            const country = nameParts[nameParts.length - 1] || 'Unknown';
+            
+            // Fetch air quality data for this location
+            fetchAirQualityData(lat, lon, city, country);
+            
+            // Hide search results
+            searchResults.style.display = 'none';
+            searchInput.value = '';
+          });
+        });
+      }
+      
+      searchResults.style.display = 'block';
+    }
+
+    // Fallback for search when API fails
+    function useMockSearchResults(query) {
+      const mockResults = [
+        { display_name: "Cairo, Egypt", lat: 30.0444, lon: 31.2357 },
+        { display_name: "London, UK", lat: 51.5074, lon: -0.1278 },
+        { display_name: "New York, USA", lat: 40.7128, lon: -74.0060 },
+        { display_name: "Tokyo, Japan", lat: 35.6762, lon: 139.6503 },
+        { display_name: "Paris, France", lat: 48.8566, lon: 2.3522 }
+      ].filter(location => 
+        location.display_name.toLowerCase().includes(query.toLowerCase())
+      );
+      
+      displaySearchResults(mockResults);
+    }
+
+    // Show search results when input is focused
+    function showSearchResults() {
+      if (searchInput.value.trim().length >= 2) {
+        handleSearchInput({ target: searchInput });
+      }
+    }
+
+    // Start polling for data updates
+    function startDataPolling() {
+      const frequency = parseInt(updateFrequency.value);
+      
+      // Clear any existing interval
+      if (updateInterval) {
+        clearInterval(updateInterval);
+      }
+      
+      // Set up new interval
+      updateInterval = setInterval(() => {
+        refreshAllMarkers();
+      }, frequency);
+    }
+
+    // Refresh all markers with current data
+    function refreshAllMarkers() {
+      Object.values(aqiData).forEach(data => {
+        if (data.marker) {
+          fetchAirQualityData(data.lat, data.lon, data.city, data.country, true);
+        }
+      });
+    }
+
+    // Fetch air quality data from API
+    async function fetchAirQualityData(lat, lon, cityName, countryName, isRefresh = false) {
+      // Show loading state
+      if (currentMarker && !isRefresh) {
+        currentMarker.bindPopup(`<div class="loading-spinner"></div> Loading data...`).openPopup();
+      }
+      
+      try {
+        let data;
+        
+        if (currentApiSource === 'waqi') {
+          data = await fetchWAQIData(lat, lon, cityName, countryName);
+        } else {
+          data = await fetchOpenWeatherData(lat, lon, cityName, countryName);
+        }
+        
+        // Add or update marker on map
+        const marker = addOrUpdateMarker(data);
+        
+        // Update location card if this is the currently selected location
+        if (currentMarker && currentMarker.getLatLng().lat === lat && currentMarker.getLatLng().lng === lon) {
+          updateLocationCard(data);
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('Error fetching air quality data:', error);
+        
+        // Use mock data as fallback
+        const mockData = generateMockAirQualityData(lat, lon, cityName, countryName);
+        const marker = addOrUpdateMarker(mockData);
+        
+        if (currentMarker && currentMarker.getLatLng().lat === lat && currentMarker.getLatLng().lng === lon) {
+          updateLocationCard(mockData);
+        }
+        
+        if (currentMarker && !isRefresh) {
+          currentMarker.bindPopup(`Using simulated data<br>API temporarily unavailable`).openPopup();
+        }
+        
+        return mockData;
+      }
+    }
+
+    // Fetch data from World Air Quality Index API
+    async function fetchWAQIData(lat, lon, cityName, countryName) {
+      // Note: Replace 'demo' with your actual WAQI API token
+      const response = await fetch(`https://api.waqi.info/feed/geo:${lat};${lon}/?token=${apiToken}`);
+      const result = await response.json();
+      
+      if (result.status === 'ok') {
+        const aqi = result.data.aqi;
+        const iaqi = result.data.iaqi || {};
+        
+        return {
+          city: cityName,
+          country: countryName,
+          lat: lat,
+          lon: lon,
+          aqi: aqi !== '-' ? aqi : 50, // Default to moderate if no data
+          pm25: iaqi.pm25 ? iaqi.pm25.v : Math.floor(Math.random() * 100),
+          pm10: iaqi.pm10 ? iaqi.pm10.v : Math.floor(Math.random() * 100),
+          o3: iaqi.o3 ? iaqi.o3.v : Math.floor(Math.random() * 100),
+          no2: iaqi.no2 ? iaqi.no2.v : Math.floor(Math.random() * 100),
+          so2: iaqi.so2 ? iaqi.so2.v : Math.floor(Math.random() * 100),
+          co: iaqi.co ? iaqi.co.v : Math.floor(Math.random() * 10),
+          timestamp: new Date().toISOString()
+        };
+      } else {
+        throw new Error(result.data || 'API error');
+      }
+    }
+
+    // Fetch data from OpenWeather API (air pollution endpoint)
+    async function fetchOpenWeatherData(lat, lon, cityName, countryName) {
+      // Note: You would need an OpenWeather API key for this
+      const apiKey = 'your_openweather_api_key_here'; // Replace with actual key
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`);
+      const result = await response.json();
+      
+      if (result.list && result.list.length > 0) {
+        const components = result.list[0].components;
+        
+        // Convert OpenWeather data to AQI (simplified conversion)
+        const aqi = calculateAQIFromComponents(components);
+        
+        return {
+          city: cityName,
+          country: countryName,
+          lat: lat,
+          lon: lon,
+          aqi: aqi,
+          pm25: components.pm2_5,
+          pm10: components.pm10,
+          o3: components.o3,
+          no2: components.no2,
+          so2: components.so2,
+          co: components.co,
+          timestamp: new Date().toISOString()
+        };
+      } else {
+        throw new Error('No air pollution data available');
+      }
+    }
+
+    // Calculate AQI from component values (simplified)
+    function calculateAQIFromComponents(components) {
+      // This is a simplified calculation - real AQI calculations are more complex
+      const pm25 = components.pm2_5 || 0;
+      const pm10 = components.pm10 || 0;
+      const no2 = components.no2 || 0;
+      const so2 = components.so2 || 0;
+      const o3 = components.o3 || 0;
+      const co = components.co || 0;
+      
+      // Weighted average of pollutants
+      return Math.floor(
+        (pm25 * 0.3) + (pm10 * 0.2) + (no2 * 0.15) + (so2 * 0.15) + (o3 * 0.1) + (co * 0.1)
+      );
+    }
+
+    // Generate mock air quality data (fallback)
+    function generateMockAirQualityData(lat, lon, city, country) {
+      // Generate somewhat realistic values based on location and time
+      const baseValue = Math.abs(lat * lon * new Date().getHours()) % 300;
+      
+      return {
+        city: city,
+        country: country,
+        lat: lat,
+        lon: lon,
+        aqi: Math.floor(baseValue / 3),
+        pm25: Math.floor(baseValue / 6),
+        pm10: Math.floor(baseValue / 4),
+        o3: Math.floor(baseValue / 8),
+        no2: Math.floor(baseValue / 10),
+        so2: Math.floor(baseValue / 12),
+        co: Math.floor(baseValue / 15),
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    // Add or update marker on map
+    function addOrUpdateMarker(data) {
+      // Determine marker color based on AQI
+      const markerColor = getMarkerColor(data.aqi);
+      
+      // Create custom icon
+      const icon = L.divIcon({
+        html: `<div style="background-color: ${markerColor}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; cursor: pointer;"></div>`,
+        className: 'aqi-marker',
+        iconSize: [16, 16]
+      });
+      
+      // Check if marker already exists for this location
+      let marker;
+      const existingKey = `${data.lat},${data.lon}`;
+      
+      if (aqiData[existingKey] && aqiData[existingKey].marker) {
+        marker = aqiData[existingKey].marker;
+        marker.setLatLng([data.lat, data.lon]);
+      } else {
+        marker = L.marker([data.lat, data.lon], { icon: icon }).addTo(map);
+      }
+      
+      // Store data with marker reference
+      data.marker = marker;
+      aqiData[existingKey] = data;
+      
+      // Bind popup to marker
+      const popupContent = `
+        <div>
+          <strong>${data.city}, ${data.country}</strong><br>
+          AQI: ${data.aqi} (${getAqiStatus(data.aqi)})<br>
+          <small>Click for details</small>
+        </div>
+      `;
+      
+      marker.bindPopup(popupContent);
+      
+      // Add click event to show location card
+      marker.on('click', function() {
+        currentMarker = marker;
+        updateLocationCard(data);
+        locationCard.classList.add('active');
+      });
+      
+      return marker;
+    }
+
+    // Get marker color based on AQI value
+    function getMarkerColor(aqi) {
+      if (aqi <= 50) return '#4caf50';      // Green
+      if (aqi <= 100) return '#ffc107';     // Yellow
+      if (aqi <= 150) return '#ff9800';     // Orange
+      if (aqi <= 200) return '#f44336';     // Red
+      if (aqi <= 300) return '#9c27b0';     // Purple
+      return '#7e5700';                     // Maroon
+    }
+
+    // Update location card with data
+    function updateLocationCard(data) {
+      document.getElementById('cardCity').textContent = data.city;
+      document.getElementById('cardCountry').textContent = data.country;
+      document.getElementById('cardAqi').textContent = data.aqi;
+      
+      // Update health status
+      const status = getAqiStatus(data.aqi);
+      const statusElement = document.getElementById('cardStatus');
+      statusElement.textContent = status;
+      statusElement.className = 'health-status ' + getStatusClass(data.aqi);
+      
+      // Update pollutant values
+      document.getElementById('cardPm25').textContent = data.pm25 + ' µg/m³';
+      document.getElementById('cardPm10').textContent = data.pm10 + ' µg/m³';
+      document.getElementById('cardO3').textContent = data.o3 + ' µg/m³';
+      document.getElementById('cardNo2').textContent = data.no2 + ' µg/m³';
+      document.getElementById('cardSo2').textContent = data.so2 + ' µg/m³';
+      document.getElementById('cardCo').textContent = data.co + ' µg/m³';
+      
+      // Update recommendations
+      document.getElementById('cardRecommendations').textContent = getHealthRecommendations(data.aqi);
+      
+      // Update timestamp
+      const updated = new Date(data.timestamp);
+      document.getElementById('cardUpdated').textContent = 'Last updated: ' + 
+        updated.toLocaleTimeString() + ' ' + 
+        updated.toLocaleDateString();
+      
+      // Update sidebar pollutant values
+      document.getElementById('pm25-value').textContent = data.pm25 + ' µg/m³';
+      document.getElementById('o3-value').textContent = data.o3 + ' µg/m³';
+      document.getElementById('no2-value').textContent = data.no2 + ' µg/m³';
+      document.getElementById('so2-value').textContent = data.so2 + ' µg/m³';
+      
+      // Show alert for poor air quality
+      if (data.aqi > 150) {
+        showAlert(`Poor air quality alert in ${data.city} - AQI: ${data.aqi}`);
+      }
+    }
+
+    // Get AQI status text
+    function getAqiStatus(aqi) {
+      if (aqi <= 50) return 'Good';
+      if (aqi <= 100) return 'Moderate';
+      if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
+      if (aqi <= 200) return 'Unhealthy';
+      if (aqi <= 300) return 'Very Unhealthy';
+      return 'Hazardous';
+    }
+
+    // Get CSS class for status
+    function getStatusClass(aqi) {
+      if (aqi <= 50) return 'good';
+      if (aqi <= 100) return 'moderate';
+      if (aqi <= 150) return 'unhealthy-sensitive';
+      if (aqi <= 200) return 'unhealthy';
+      if (aqi <= 300) return 'very-unhealthy';
+      return 'hazardous';
+    }
+
+    // Get health recommendations based on AQI
+    function getHealthRecommendations(aqi) {
+      if (aqi <= 50) {
+        return 'Air quality is satisfactory. Enjoy your normal outdoor activities.';
+      } else if (aqi <= 100) {
+        return 'Air quality is acceptable. Unusually sensitive people should consider reducing prolonged outdoor exertion.';
+      } else if (aqi <= 150) {
+        return 'Members of sensitive groups may experience health effects. General public is less likely to be affected.';
+      } else if (aqi <= 200) {
+        return 'Everyone may begin to experience health effects. Avoid prolonged outdoor exertion.';
+      } else if (aqi <= 300) {
+        return 'Health alert: everyone may experience more serious health effects. Avoid all outdoor activity.';
+      } else {
+        return 'Health warning of emergency conditions. The entire population is more likely to be affected. Stay indoors.';
+      }
+    }
+
+    // Show alert banner
+    function showAlert(message) {
+      document.getElementById('alertText').textContent = message;
+      document.getElementById('alertBanner').style.display = 'flex';
+      
+      // Auto-hide after 10 seconds
+      setTimeout(() => {
+        document.getElementById('alertBanner').style.display = 'none';
+      }, 10000);
+    }
+
+    // Locate user and center map
+    function locateUser() {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser');
+        return;
+      }
+      
+      // Show loading in location card
+      document.getElementById('cardCity').textContent = 'Locating...';
+      document.getElementById('cardCountry').textContent = '';
+      document.getElementById('cardAqi').textContent = '--';
+      locationCard.classList.add('active');
+      
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          
+          map.setView([lat, lon], 12);
+          fetchAirQualityData(lat, lon, 'Your Location', '');
+        },
+        error => {
+          alert('Unable to retrieve your location');
+          locationCard.classList.remove('active');
+        }
+      );
+    }
+
+    // Update date and time display
+    function updateDateTime() {
+      const now = new Date();
+      const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit', 
+        minute: '2-digit'
+      };
+      const dateStr = now.toLocaleDateString('en-US', options);
+      document.getElementById('currentDate').textContent = dateStr + ' UTC';
+    }
+
+    // Onboarding tour functionality
+    let currentTourStep = 0;
+    const tourSteps = [
+      "Welcome to the Global Air Quality Platform! This tool helps you monitor air quality worldwide.",
+      "Use the search bar to find air quality information for any city or country.",
+      "Click on any marker on the map to see detailed air quality information and health recommendations.",
+      "The location card shows AQI values, pollutant levels, and health recommendations for your selected location.",
+      "Use the update frequency selector to control how often data is refreshed.",
+      "The map controls allow you to zoom, reset view, and locate your current position."
+    ];
+
+    function startTour() {
+      currentTourStep = 0;
+      updateTourContent();
+      document.getElementById('onboardingTour').style.display = 'flex';
+    }
+
+    function updateTourContent() {
+      document.getElementById('tourText').textContent = tourSteps[currentTourStep];
+      
+      // Update button visibility
+      document.getElementById('tourPrev').style.display = currentTourStep === 0 ? 'none' : 'inline-block';
+      document.getElementById('tourNext').textContent = currentTourStep === tourSteps.length - 1 ? 'Finish' : 'Next';
+      document.getElementById('tourSkip').style.display = currentTourStep === tourSteps.length - 1 ? 'none' : 'inline-block';
+    }
+
+    function nextTourStep() {
+      if (currentTourStep < tourSteps.length - 1) {
+        currentTourStep++;
+        updateTourContent();
+      } else {
+        endTour();
+      }
+    }
+
+    function prevTourStep() {
+      if (currentTourStep > 0) {
+        currentTourStep--;
+        updateTourContent();
+      }
+    }
+
+    function endTour() {
+      document.getElementById('onboardingTour').style.display = 'none';
+      localStorage.setItem('tourCompleted', 'true');
+    }
+
+    // Set up tour event listeners
+    document.getElementById('tourPrev').addEventListener('click', prevTourStep);
+    document.getElementById('tourNext').addEventListener('click', nextTourStep);
+    document.getElementById('tourSkip').addEventListener('click', endTour);
+    document.getElementById('helpIcon').addEventListener('click', startTour);
+  </script>
+</body>
+</html>
