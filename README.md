@@ -1,66 +1,20 @@
-# Cleanest, Safe Skies – Air Quality & Safety Prediction Map
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-**Short Description:**
-A web-based dashboard that forecasts air quality and predicts pollution hazards by integrating real-time NASA TEMPO satellite data with ground-based air quality measurements and weather information. The platform provides live interactive maps, early warnings, and supports evidence-based public health decisions for vulnerable community groups, policy makers, schools, and environmental authorities.
+# Run and deploy your AI Studio app
 
----
+This contains everything you need to run your app locally.
 
-## Overview
+View your app in AI Studio: https://ai.studio/apps/drive/1TXQtc8cD8ixEzEAirtao-jC3FfgYInRF
 
-Cleanest, Safe Skies is an advanced web application for monitoring, forecasting, and visualizing air pollution risks using cutting-edge NASA TEMPO data, local weather, and ground sensor measurements. The platform enables public health action by delivering real-time updates, predictive insights, and smart notifications to diverse stakeholders.
+## Run Locally
 
-## Features
+**Prerequisites:**  Node.js
 
-- **Real-Time Integration:** Combines NASA TEMPO satellite observations, ground monitoring, and meteorological data for accurate, timely coverage.
-- **Air Quality Forecasting:** Machine learning and statistical models predict upcoming air quality conditions and pollution spikes for any location.
-- **Smart Alerts:** Proactive notifications warn users of emerging hazards affecting health-sensitive communities.
-- **Scalable Cloud Design:** Seamless transition between local and cloud processing allows for fast, team-wide collaboration and big data support.
-- **Interactive Visualization:** Intuitive global map panel with pollutant layers, model switching, and time navigation controls.
 
-## Target Users
-
-- **Health-Sensitive Groups:** Senior care managers, school administrators, residents near industrial sites.
-- **Policy Partners:** Government leaders, transit authorities, parks/recreation officials, tourism boards.
-- **Emergency Networks:** Wildfire managers, disaster response teams, meteorological services.
-- **Public Engagement:** Citizen science coordinators, community air quality advocates.
-
-## Core Components
-
-1. **Data Collection & Fusion**
-    - Retrieve and merge TEMPO satellite, ground sensor, and weather datasets.
-    - Cleanse, synchronize, and derive actionable air quality indicators.
-
-2. **Predictive Modeling**
-    - Apply AI/machine learning for high-resolution air quality and pollution hazard forecasting.
-
-3. **Web-Based Visualization**
-    - Display real-time and historical pollutant data as interactive maps and dashboards with user-tailored alerts.
-
-4. **Cloud & Local Computation**
-    - Support scale-out of data processing and collaboration across user roles and regions.
-
-5. **Impact Assessment**
-    - Quantify improvements to community health, policy effectiveness, and risk reduction from dashboard-informed action.
-
-## Research & Roadmap
-
-- Driving next-generation air quality surveillance using multi-source and satellite data.
-- Delivering rapid, accessible warnings and visualizations to empower diverse agencies and the public.
-- Enabling data-driven environmental policies and supporting a healthier society via improved decision making.
-
-## Usage
-
-> The app is designed for deployable use by agencies, schools, health facilities, city planners, and community advocates seeking reliable, science-based air quality prediction for operational or public information needs.
-
----
-
-**License:** MIT
-
-**Contributors:** [AIMTY]
-
-**Contact:** [aimt16@hotmail.com]
-
----
-
-*Powered by NASA TEMPO & Open Data Science*
-
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
