@@ -1,13 +1,51 @@
-name: Node.js CI
+name: Node.js CI and Dependency Updates
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  schedule:
+    - cron: '0 0 1 * *'  # Runs at 00:00 on the 1st of each month
+  workflow_dispatch:  # Allows manual trigger from Actions tab
 
 jobs:
+  dependency-update:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Update Dependencies
+        run: |
+          npm install -g npm-check-updates
+          ncu -u
+          npm install
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: 'chore: update dependencies'
+          title: 'chore: automatic dependency updates'
+          body: |
+            Automatic dependency updates performed by npm-check-updates.
+            This PR updates package.json and package-lock.json to the latest versions.
+          branch: automated-dependency-updates
+          delete-branch: true
+
   build:
+    needs: dependency-update
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     strategy:
       matrix:
