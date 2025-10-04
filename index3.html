@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS:Interactive Air Quality & Safety Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+  <style>
+    /* Using a more modern font for better readability */
+    body {
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      scrollbar-width: thin;
+      scrollbar-color: #4fc3f7 #162b3e;
+    }
+    /* Custom scrollbar for Webkit browsers */
+    body::-webkit-scrollbar {
+      width: 8px;
+    }
+    body::-webkit-scrollbar-track {
+      background: #162b3e;
+    }
+    body::-webkit-scrollbar-thumb {
+      background-color: #4fc3f7;
+      border-radius: 10px;
+      border: 2px solid #162b3e;
+    }
+    /* CSS variables for consistent theming */
+    :root {
+      --primary: #0c1b2e;
+      --secondary: #162b3e;
+      --accent: #4fc3f7;
+      --danger: #f44336;
+      --warning: #ffc107;
+      --success: #4caf50;
+      --text: #ffffff;
+      --text-secondary: #a0c4e0;
+      --card-bg: rgba(22, 43, 62, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+    }
+    /* High-contrast theme */
+    .high-contrast {
+      --primary: #000000;
+      --secondary: #1a1a1a;
+      --accent: #00ffff;
+      --danger: #ff1a1a;
+      --warning: #ffff1a;
+      --success: #1aff1a;
+      --text: #ffffff;
+      --text-secondary: #e6e6e6;
+      --card-bg: rgba(10, 10, 10, 0.95);
+      --border: rgba(255, 255, 255, 0.4);
+    }
+    /* CSS for the Leaflet map tiles to appear dark */
+    .leaflet-tile-pane {
+      filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+    }
+    /* Styling for the tab buttons in the location card */
+    .tab-btn.active {
+      background-color: var(--accent);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    /* Styling for the pollutant list items */
+    .pollutant-item.active {
+      background-color: rgba(79, 195, 247, 0.15);
+      border-left: 3px solid var(--accent);
+      padding-left: 10px;
+    }
+    /* Smooth transition for sidebar collapse/expand */
+    #sidebar {
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .leaflet-popup-content-wrapper {
+        background: var(--card-bg);
+        color: var(--text);
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+    .leaflet-popup-content {
+        margin: 15px;
+    }
+    .leaflet-popup-tip {
+        background: var(--card-bg);
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white antialiased">
+  
+  <div id="app" class="flex h-screen overflow-hidden bg-gradient-to-br from-[#0c1b2e] to-[#162b3e]">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-80 bg-[rgba(22,43,62,0.8)] backdrop-blur-sm border-r border-[rgba(255,255,255,0.1)] flex flex-col z-20">
+      <!-- Logo and Collapse Button -->
+      <div class="flex items-center justify-between p-4 border-b border-[rgba(255,255,255,0.1)]">
+        <div class="flex items-center space-x-3">
+          <i class="fas fa-wind text-2xl text-[#4fc3f7]"></i>
+          <div id="logo-text">
+            <h1 class="text-lg font-bold text-[#4fc3f7]">AirGuard</h1>
+            <p class="text-xs text-gray-400">Global Air Quality</p>
+          </div>
+        </div>
+        <button id="collapseBtn" class="p-2 rounded-full hover:bg-white/10 focus:outline-none">
+          <i id="collapseIcon" class="fas fa-chevron-left transition-transform duration-300"></i>
+        </button>
+      </div>
+      
+      <!-- Search -->
+      <div class="p-4">
+        <div class="relative">
+          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input id="searchInput" type="text" placeholder="Search city or country..." class="w-full bg-black/20 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4fc3f7]">
+          <div id="searchResults" class="absolute top-full left-0 right-0 mt-1 bg-[#162b3e] border border-white/10 rounded-lg max-h-60 overflow-y-auto z-30 hidden"></div>
+        </div>
+      </div>
+      
+      <!-- Pollutants List -->
+      <div class="flex-grow p-4 overflow-y-auto">
+        <h2 class="text-sm font-semibold text-[#4fc3f7] mb-3 flex items-center"><i class="fas fa-smog mr-2"></i><span class="sidebar-text">Pollutant Layers</span></h2>
+        <ul id="pollutantsList" class="space-y-2">
+            <!-- Pollutant items will be dynamically inserted here -->
+        </ul>
+      </div>
+
+      <!-- Settings and Controls -->
+      <div class="p-4 border-t border-[rgba(255,255,255,0.1)]">
+         <h2 class="text-sm font-semibold text-[#4fc3f7] mb-3 flex items-center"><i class="fas fa-tools mr-2"></i><span class="sidebar-text">Controls</span></h2>
+         <div class="sidebar-text space-y-3">
+             <div>
+                <label for="dataSource" class="block text-xs text-gray-400 mb-1">Data Source</label>
+                <select id="dataSource" class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4fc3f7]">
+                  <option value="waqi">World Air Quality Index</option>
+                  <option value="openweather">OpenWeather Map</option>
+                </select>
+             </div>
+             <div>
+                <label for="mapType" class="block text-xs text-gray-400 mb-1">Map Display</label>
+                <select id="mapType" class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4fc3f7]">
+                  <option value="heatmap">Heatmap</option>
+                  <option value="markers">Markers</option>
+                </select>
+             </div>
+         </div>
+         <div class="mt-4 flex space-x-2">
+             <button id="contrastToggle" class="w-1/2 flex items-center justify-center space-x-2 bg-black/20 p-2 rounded-lg text-sm hover:bg-white/10"><i class="fas fa-adjust"></i><span class="sidebar-text">Contrast</span></button>
+             <button id="textSizeToggle" class="w-1/2 flex items-center justify-center space-x-2 bg-black/20 p-2 rounded-lg text-sm hover:bg-white/10"><i class="fas fa-text-height"></i><span class="sidebar-text">Text</span></button>
+         </div>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col relative">
+      <header class="flex items-center justify-between p-4 bg-black/10">
+        <h2 class="text-xl font-bold">Global Air Quality Dashboard</h2>
+        <div class="flex items-center space-x-4">
+          <div class="text-sm text-gray-300"><i class="far fa-calendar-alt mr-2"></i><span id="currentDate"></span></div>
+          <button id="locateMe" class="p-2 rounded-full hover:bg-white/10" title="Locate Me"><i class="fas fa-location-arrow"></i></button>
+        </div>
+      </header>
+      
+      <!-- Map Container -->
+      <div id="map" class="flex-1"></div>
+      
+      <!-- Map Legend -->
+      <div class="legend absolute bottom-5 left-5 bg-[rgba(22,43,62,0.8)] backdrop-blur-sm p-3 rounded-lg border border-white/10 shadow-lg z-10 w-64">
+        <div id="legendTitle" class="font-bold text-sm text-[#4fc3f7] mb-2">AQI Index</div>
+        <div class="w-full h-2 rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 mb-1"></div>
+        <div class="flex justify-between text-xs text-gray-300">
+          <span>Good</span>
+          <span>Moderate</span>
+          <span>Unhealthy</span>
+        </div>
+      </div>
+
+      <!-- Location Card -->
+      <div id="locationCard" class="absolute top-20 left-5 bg-[rgba(22,43,62,0.8)] backdrop-blur-sm w-96 max-w-[90vw] rounded-lg border border-white/10 shadow-2xl z-10 hidden transform transition-all duration-300">
+        <!-- Card Header -->
+        <div class="flex items-center justify-between p-3 border-b border-white/10">
+          <div>
+            <h3 id="cardCity" class="font-bold text-lg text-[#4fc3f7]">Loading...</h3>
+            <p id="cardCountry" class="text-sm text-gray-400">Fetching data...</p>
+          </div>
+          <button id="cardClose" class="p-2 rounded-full hover:bg-white/10"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <!-- Card Tabs -->
+        <div class="flex bg-black/20 p-1">
+          <button class="tab-btn flex-1 py-2 text-sm rounded-md active" data-tab="current">Current</button>
+          <button class="tab-btn flex-1 py-2 text-sm rounded-md" data-tab="history">History</button>
+          <button class="tab-btn flex-1 py-2 text-sm rounded-md" data-tab="forecast">Forecast</button>
+        </div>
+        
+        <!-- Card Content -->
+        <div class="p-4">
+          <!-- Current Conditions Tab -->
+          <div id="current-tab" class="tab-content">
+              <div class="text-center mb-4">
+                  <p class="text-sm text-gray-400">Air Quality Index (AQI)</p>
+                  <div id="cardAqi" class="text-5xl font-bold my-1">--</div>
+                  <div id="cardStatus" class="inline-block px-3 py-1 text-sm rounded-full font-semibold">--</div>
+              </div>
+              <div id="pollutantDetails" class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <!-- Pollutant details will be dynamically inserted here -->
+              </div>
+               <p id="cardRecommendations" class="mt-4 text-xs text-center text-gray-300 bg-black/20 p-2 rounded-md"></p>
+          </div>
+
+          <!-- History Tab -->
+          <div id="history-tab" class="tab-content hidden">
+            <h4 class="text-sm font-semibold text-center mb-2">Last 24 Hours AQI</h4>
+            <canvas id="historyChart" class="w-full h-48"></canvas>
+          </div>
+
+          <!-- Forecast Tab -->
+          <div id="forecast-tab" class="tab-content hidden">
+              <h4 class="text-sm font-semibold text-center mb-2">7-Day AQI Forecast</h4>
+              <div id="forecast-list" class="space-y-2 text-sm">
+                  <!-- Forecast items will be dynamically inserted here -->
+              </div>
+          </div>
+        </div>
+        <div id="cardUpdated" class="px-4 pb-3 text-xs text-center text-gray-500"></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- STATE MANAGEMENT ---
+      let map;
+      let heatmapLayer;
+      let markerLayer = L.layerGroup();
+      let activePollutant = 'aqi';
+      let historyChart;
+      const cachedData = {};
+      const apiBaseUrl = '/api/air-quality'; // Using a proxy endpoint
+
+      // --- DOM ELEMENTS ---
+      const elements = {
+        sidebar: document.getElementById('sidebar'),
+        collapseBtn: document.getElementById('collapseBtn'),
+        collapseIcon: document.getElementById('collapseIcon'),
+        logoText: document.getElementById('logo-text'),
+        sidebarTexts: document.querySelectorAll('.sidebar-text'),
+        pollutantsList: document.getElementById('pollutantsList'),
+        mapTypeSelect: document.getElementById('mapType'),
+        locationCard: document.getElementById('locationCard'),
+        cardClose: document.getElementById('cardClose'),
+        searchInput: document.getElementById('searchInput'),
+        searchResults: document.getElementById('searchResults'),
+        locateMeBtn: document.getElementById('locateMe'),
+        currentDateEl: document.getElementById('currentDate'),
+        contrastToggle: document.getElementById('contrastToggle'),
+        textSizeToggle: document.getElementById('textSizeToggle'),
+      };
+
+      // --- INITIALIZATION ---
+      function initializeApp() {
+        initMap();
+        initEventListeners();
+        updateDateTime();
+        setInterval(updateDateTime, 60000);
+        populatePollutants();
+        fetchInitialData();
+      }
+
+      function initMap() {
+        map = L.map('map', {
+            center: [20, 0],
+            zoom: 2,
+            zoomControl: false // Using custom controls
+        });
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        heatmapLayer = L.heatLayer([], {
+          radius: 25,
+          blur: 15, 
+          maxZoom: 11,
+          max: 200, // Max AQI value for scaling
+          gradient: { 0.4: 'green', 0.65: 'yellow', 1: 'red' }
+        }).addTo(map);
+        
+        markerLayer.addTo(map);
+        map.removeLayer(markerLayer); // Default to heatmap only
+
+        map.on('click', onMapClick);
+        map.on('moveend', fetchViewportData);
+      }
+
+      function initEventListeners() {
+        elements.collapseBtn.addEventListener('click', toggleSidebar);
+        elements.mapTypeSelect.addEventListener('change', toggleMapDisplay);
+        elements.cardClose.addEventListener('click', () => hideElement(elements.locationCard));
+        elements.searchInput.addEventListener('input', handleSearch);
+        elements.locateMeBtn.addEventListener('click', locateUser);
+        elements.contrastToggle.addEventListener('click', () => document.body.classList.toggle('high-contrast'));
+        elements.textSizeToggle.addEventListener('click', () => document.body.classList.toggle('text-lg'));
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.getElementById(`${tab}-tab`).classList.remove('hidden');
+            });
+        });
+
+        elements.pollutantsList.addEventListener('click', (e) => {
+            const item = e.target.closest('.pollutant-item');
+            if(item) {
+                document.querySelectorAll('.pollutant-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                activePollutant = item.dataset.pollutant;
+                document.getElementById('legendTitle').textContent = `${item.querySelector('strong').textContent} (${item.dataset.unit})`;
+                updateMapVisualization();
+            }
+        });
+      }
+      
+      // --- UI & INTERACTIONS ---
+
+      function toggleSidebar() {
+          const isCollapsed = elements.sidebar.classList.toggle('w-16');
+          elements.sidebar.classList.toggle('w-80');
+          elements.collapseIcon.classList.toggle('rotate-180');
+          elements.logoText.classList.toggle('hidden');
+          elements.sidebarTexts.forEach(text => text.classList.toggle('hidden'));
+      }
+      
+      function toggleMapDisplay(e) {
+          if (e.target.value === 'heatmap') {
+              map.addLayer(heatmapLayer);
+              map.removeLayer(markerLayer);
+          } else {
+              map.removeLayer(heatmapLayer);
+              map.addLayer(markerLayer);
+          }
+      }
+
+      function updateDateTime() {
+          elements.currentDateEl.textContent = new Date().toLocaleString('en-US', {
+              weekday: 'long', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+      }
+
+      function populatePollutants() {
+          const pollutants = [
+              { id: 'aqi', name: 'AQI', unit: 'Index', icon: 'fa-shield-alt' },
+              { id: 'pm25', name: 'PM2.5', unit: 'µg/m³', icon: 'fa-wind' },
+              { id: 'o3', name: 'Ozone (O3)', unit: 'µg/m³', icon: 'fa-cloud' },
+              { id: 'no2', name: 'NO₂', unit: 'µg/m³', icon: 'fa-industry' },
+              { id: 'so2', name: 'SO₂', unit: 'µg/m³', icon: 'fa-smog' },
+          ];
+          elements.pollutantsList.innerHTML = pollutants.map(p => `
+              <li class="pollutant-item flex items-center p-2 rounded-md cursor-pointer hover:bg-white/5 ${p.id === 'aqi' ? 'active' : ''}" data-pollutant="${p.id}" data-unit="${p.unit}">
+                  <i class="fas ${p.icon} w-8 text-center text-[#4fc3f7]"></i>
+                  <div class="sidebar-text">
+                      <strong>${p.name}</strong>
+                      <p class="text-xs text-gray-400">View on Map</p>
+                  </div>
+              </li>
+          `).join('');
+      }
+
+      const showElement = (el) => el.classList.remove('hidden');
+      const hideElement = (el) => el.classList.add('hidden');
+
+      // --- DATA FETCHING & HANDLING ---
+      async function fetchData(lat, lng) {
+        const cacheKey = `${lat.toFixed(2)},${lng.toFixed(2)}`;
+        if (cachedData[cacheKey]) return cachedData[cacheKey];
+
+        try {
+            // MOCKUP: This simulates a call to a secure backend proxy
+            // In a real app, this would be: `await fetch(`${apiBaseUrl}?lat=${lat}&lng=${lng}`);`
+            const data = generateMockData(lat, lng);
+            cachedData[cacheKey] = data;
+            return data;
+        } catch (error) {
+            console.error("Failed to fetch data:", error);
+            return null; // Handle error gracefully
+        }
+      }
+
+      function fetchInitialData() {
+          const initialCities = [
+              { lat: 30.04, lng: 31.23 }, { lat: 51.50, lng: -0.12 }, 
+              { lat: 40.71, lng: -74.00 }, { lat: 35.67, lng: 139.65 },
+              { lat: 28.61, lng: 77.20 }, { lat: 39.90, lng: 116.40 }
+          ];
+          initialCities.forEach(city => fetchData(city.lat, city.lng).then(processApiData));
+      }
+
+      function fetchViewportData() {
+        // Fetch data for the current map view to populate the heatmap
+        const bounds = map.getBounds();
+        const center = bounds.getCenter();
+        fetchData(center.lat, center.lng).then(processApiData); // Fetch for center
+        // In a real app, you might fetch data for multiple points within the viewport
+      }
+
+      function processApiData(data) {
+          if (!data) return;
+          const { lat, lng, aqi } = data.current;
+          const heatPoint = [lat, lng, aqi / 300]; // Normalize for heatmap intensity
+          heatmapLayer.addLatLng(heatPoint);
+
+          const marker = createMarker(data);
+          markerLayer.addLayer(marker);
+      }
+      
+      function updateMapVisualization() {
+          const heatData = [];
+          markerLayer.clearLayers();
+
+          Object.values(cachedData).forEach(data => {
+              const value = data.current.pollutants[activePollutant] || data.current.aqi;
+              let intensity = 0;
+              // Normalize intensity based on pollutant type
+              if (activePollutant === 'aqi') intensity = value / 300;
+              else if (activePollutant === 'pm25') intensity = value / 100;
+              else intensity = value / 50;
+              
+              heatData.push([data.current.lat, data.current.lng, intensity]);
+              
+              const marker = createMarker(data);
+              markerLayer.addLayer(marker);
+          });
+          heatmapLayer.setLatLngs(heatData);
+      }
+      
+      // --- API MOCKUP ---
+      // This function generates realistic mock data on the fly.
+      function generateMockData(lat, lng) {
+        const baseAqi = Math.floor(Math.abs(Math.sin(lat) * 150 + Math.cos(lng) * 150));
+        const current = {
+            aqi: baseAqi,
+            lat, lng,
+            city: `City at ${lat.toFixed(2)}°, ${lng.toFixed(2)}°`,
+            country: 'Earth',
+            status: getAqiStatus(baseAqi).text,
+            recommendation: getHealthRecommendations(baseAqi),
+            pollutants: {
+                aqi: baseAqi,
+                pm25: Math.round(baseAqi * 0.7),
+                o3: Math.round(baseAqi * 0.5),
+                no2: Math.round(baseAqi * 0.3),
+                so2: Math.round(baseAqi * 0.2),
+            },
+            updated: new Date().toISOString()
+        };
+
+        const history = Array.from({length: 24}, (_, i) => ({
+            hour: 23 - i,
+            aqi: Math.max(10, baseAqi + Math.floor(Math.sin(i) * 20 + (Math.random() - 0.5) * 30))
+        }));
+
+        const forecast = Array.from({length: 7}, (_, i) => {
+             const d = new Date();
+             d.setDate(d.getDate() + i + 1);
+             return {
+                day: d.toLocaleDateString('en-US', { weekday: 'short' }),
+                aqi: Math.max(10, baseAqi + Math.floor(Math.cos(i) * 15 + (Math.random() - 0.5) * 25)),
+             }
+        });
+        return { current, history, forecast };
+      }
+
+      // --- MAP INTERACTIONS ---
+      function onMapClick(e) {
+          fetchData(e.latlng.lat, e.latlng.lng).then(data => {
+              if (data) {
+                  updateLocationCard(data);
+                  showElement(elements.locationCard);
+                  map.flyTo([e.latlng.lat, e.latlng.lng], Math.max(map.getZoom(), 8));
+              }
+          });
+      }
+
+      function createMarker(data) {
+          const { lat, lng, aqi, city } = data.current;
+          const color = getAqiStatus(aqi).color;
+          const icon = L.divIcon({
+              className: 'custom-div-icon',
+              html: `<div style="background-color:${color};" class="w-3 h-3 rounded-full border-2 border-white/80 shadow-md"></div>`,
+              iconSize: [12, 12],
+          });
+          const marker = L.marker([lat, lng], { icon: icon });
+          marker.bindPopup(`<strong>${city}</strong><br>AQI: ${aqi}`);
+          marker.on('click', () => {
+              updateLocationCard(data);
+              showElement(elements.locationCard);
+          });
+          return marker;
+      }
+
+      function handleSearch(e) {
+          const query = e.target.value;
+          if (query.length < 3) {
+              hideElement(elements.searchResults);
+              return;
+          }
+          // Debounce search
+          setTimeout(async () => {
+              const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=5`);
+              const results = await response.json();
+              elements.searchResults.innerHTML = results.map(r => 
+                  `<div class="p-2 cursor-pointer hover:bg-white/10 text-sm" data-lat="${r.lat}" data-lng="${r.lon}">${r.display_name}</div>`
+              ).join('');
+              showElement(elements.searchResults);
+          }, 300);
+      }
+      
+      elements.searchResults.addEventListener('click', (e) => {
+          const item = e.target.closest('div');
+          if (!item) return;
+          const lat = parseFloat(item.dataset.lat);
+          const lng = parseFloat(item.dataset.lng);
+          onMapClick({ latlng: { lat, lng } });
+          hideElement(elements.searchResults);
+          elements.searchInput.value = '';
+      });
+
+      function locateUser() {
+        navigator.geolocation.getCurrentPosition(pos => {
+            onMapClick({ latlng: { lat: pos.coords.latitude, lng: pos.coords.longitude }});
+        }, () => alert("Could not get your location."));
+      }
+
+      // --- LOCATION CARD LOGIC ---
+      function updateLocationCard(data) {
+          const { current, history, forecast } = data;
+          document.getElementById('cardCity').textContent = current.city;
+          document.getElementById('cardCountry').textContent = current.country;
+          document.getElementById('cardAqi').textContent = current.aqi;
+          
+          const status = getAqiStatus(current.aqi);
+          const statusEl = document.getElementById('cardStatus');
+          statusEl.textContent = status.text;
+          statusEl.style.backgroundColor = status.bgColor;
+          statusEl.style.color = status.textColor;
+
+          document.getElementById('pollutantDetails').innerHTML = Object.entries(current.pollutants)
+            .filter(([key, _]) => key !== 'aqi')
+            .map(([key, value]) => `
+                <div class="flex justify-between items-center"><span class="text-gray-400 uppercase">${key}</span> <strong>${value} µg/m³</strong></div>
+            `).join('');
+
+          document.getElementById('cardRecommendations').textContent = current.recommendation;
+          document.getElementById('cardUpdated').textContent = `Updated: ${new Date(current.updated).toLocaleTimeString()}`;
+
+          updateHistoryChart(history);
+          updateForecastList(forecast);
+      }
+      
+      function updateHistoryChart(historyData) {
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        const labels = historyData.map(h => `${h.hour}:00`).reverse();
+        const data = historyData.map(h => h.aqi).reverse();
+
+        if (historyChart) {
+            historyChart.data.labels = labels;
+            historyChart.data.datasets[0].data = data;
+            historyChart.update();
+        } else {
+            historyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'AQI',
+                        data: data,
+                        borderColor: '#4fc3f7',
+                        backgroundColor: 'rgba(79, 195, 247, 0.2)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#a0c4e0', maxRotation: 0, autoSkip: true, maxTicksLimit: 6 }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: '#a0c4e0' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+        }
+      }
+
+      function updateForecastList(forecastData) {
+          document.getElementById('forecast-list').innerHTML = forecastData.map(day => {
+              const status = getAqiStatus(day.aqi);
+              return `
+                  <div class="flex items-center justify-between p-2 rounded-md bg-black/20">
+                      <span class="font-semibold">${day.day}</span>
+                      <div class="flex items-center space-x-2">
+                          <span style="color: ${status.textColor};">${day.aqi}</span>
+                          <div class="w-3 h-3 rounded-full" style="background-color: ${status.color};"></div>
+                      </div>
+                  </div>
+              `;
+          }).join('');
+      }
+
+      // --- UTILITY FUNCTIONS ---
+      function getAqiStatus(aqi) {
+          if (aqi <= 50) return { text: 'Good', color: '#4caf50', bgColor: 'rgba(76, 175, 80, 0.2)', textColor: '#4caf50'};
+          if (aqi <= 100) return { text: 'Moderate', color: '#ffc107', bgColor: 'rgba(255, 193, 7, 0.2)', textColor: '#ffc107'};
+          if (aqi <= 150) return { text: 'Unhealthy for Sensitive', color: '#ff9800', bgColor: 'rgba(255, 152, 0, 0.2)', textColor: '#ff9800'};
+          if (aqi <= 200) return { text: 'Unhealthy', color: '#f44336', bgColor: 'rgba(244, 67, 54, 0.2)', textColor: '#f44336'};
+          if (aqi <= 300) return { text: 'Very Unhealthy', color: '#9c27b0', bgColor: 'rgba(156, 39, 176, 0.2)', textColor: '#9c27b0'};
+          return { text: 'Hazardous', color: '#7E57C2', bgColor: 'rgba(126, 87, 194, 0.2)', textColor: '#7E57C2'};
+      }
+
+      function getHealthRecommendations(aqi) {
+          if (aqi <= 50) return 'Air quality is excellent. Great day for outdoor activities!';
+          if (aqi <= 100) return 'Sensitive individuals should consider limiting prolonged outdoor exertion.';
+          if (aqi <= 150) return 'General public, and especially sensitive groups, are at risk. Reduce outdoor activity.';
+          if (aqi <= 200) return 'Everyone may experience health effects. Avoid prolonged outdoor exertion.';
+          return 'Health alert: everyone may experience more serious health effects. Stay indoors if possible.';
+      }
+
+      // --- START THE APP ---
+      initializeApp();
+    });
+  </script>
+</body>
+</html>
