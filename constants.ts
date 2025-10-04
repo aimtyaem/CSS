@@ -3,12 +3,12 @@ import type { Pollutant, PollutantLayer } from './types';
 export const POLLUTANTS: Pollutant[] = ['PM2.5', 'O3', 'NO2', 'SO2'];
 
 export const POLLUTANT_LAYERS: PollutantLayer[] = [
-    { id: 'AQI', name: 'Combined AQI', unit: 'AQI', imageUrl: 'https://picsum.photos/seed/aqi/1600/1200', gradient: 'from-green-500 via-yellow-500 via-orange-500 to-red-500' },
-    { id: 'PM2.5', name: 'PM2.5', unit: 'µg/m³', imageUrl: 'https://picsum.photos/seed/pm25/1600/1200', gradient: 'from-sky-200 via-sky-500 to-sky-900' },
-    { id: 'O3', name: 'Ozone (O₃)', unit: 'ppb', imageUrl: 'https://picsum.photos/seed/o3/1600/1200', gradient: 'from-purple-200 via-purple-500 to-purple-900'},
-    { id: 'NO2', name: 'Nitrogen Dioxide (NO₂)', unit: 'ppb', imageUrl: 'https://picsum.photos/seed/no2/1600/1200', gradient: 'from-amber-200 via-amber-500 to-amber-900'},
-    { id: 'CH2O', name: 'Formaldehyde (CH₂O)', unit: 'ppb', imageUrl: 'https://picsum.photos/seed/ch2o/1600/1200', gradient: 'from-teal-200 via-teal-500 to-teal-900'},
-    { id: 'Aerosol Index', name: 'Aerosol Index', unit: 'index', imageUrl: 'https://picsum.photos/seed/aerosol/1600/1200', gradient: 'from-slate-200 via-slate-400 to-slate-600'},
+    { id: 'AQI', name: 'Combined AQI', unit: 'AQI', gradient: 'from-blue-400 via-green-400 via-yellow-400 to-red-500' },
+    { id: 'PM2.5', name: 'PM2.5', unit: 'µg/m³', gradient: 'from-cyan-400 to-cyan-700' },
+    { id: 'O3', name: 'Ozone (O₃)', unit: 'ppb', gradient: 'from-purple-400 to-purple-700'},
+    { id: 'NO2', name: 'Nitrogen Dioxide (NO₂)', unit: 'ppb', gradient: 'from-orange-400 to-orange-700'},
+    { id: 'CH2O', name: 'Formaldehyde (CH₂O)', unit: 'ppb', gradient: 'from-teal-400 to-teal-700'},
+    { id: 'Aerosol Index', name: 'Aerosol Index', unit: 'index', gradient: 'from-gray-400 to-gray-700'},
 ];
 
 

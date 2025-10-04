@@ -48,22 +48,22 @@ const primaryUseCasesOptions: {id: PrimaryUseCase, name: string}[] = [
 
 const FormInput: React.FC<{label: string; id: string; children: React.ReactNode}> = ({ label, id, children }) => (
     <div>
-        <label htmlFor={id} className="block text-sm font-medium text-brand-text-muted mb-2">{label}</label>
+        <label htmlFor={id} className="block text-sm font-medium text-theme-text-secondary mb-2 font-mono">{label}</label>
         {children}
     </div>
 );
 
 const CheckboxGroup: React.FC<{ title: string; options: {id: string, name: string}[], selected: string[], onChange: (id: string) => void }> = ({ title, options, selected, onChange }) => (
     <div>
-        <h3 className="text-sm font-medium text-brand-text-muted mb-3">{title}</h3>
+        <h3 className="text-sm font-medium text-theme-text-secondary mb-3 font-mono">{title}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
             {options.map(option => (
-                 <label key={option.id} className="flex items-center text-sm text-brand-text cursor-pointer">
+                 <label key={option.id} className="flex items-center text-sm text-theme-text-primary cursor-pointer">
                     <input
                         type="checkbox"
                         checked={selected.includes(option.id)}
                         onChange={() => onChange(option.id)}
-                        className="form-checkbox h-4 w-4 bg-brand-light border-brand-light rounded text-brand-accent focus:ring-brand-accent"
+                        className="form-checkbox h-4 w-4 bg-slate-100 border-slate-300 rounded text-theme-primary focus:ring-theme-primary focus:ring-offset-theme-surface"
                     />
                     <span className="ml-3">{option.name}</span>
                 </label>
@@ -94,34 +94,34 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
     };
     
     return (
-        <div className="p-8 flex-1 overflow-y-auto bg-brand-dark animate-fade-in">
-            <h1 className="text-3xl font-bold text-white mb-8">Settings</h1>
+        <div className="p-8 flex-1 overflow-y-auto bg-transparent animate-fade-in">
+            <h1 className="text-3xl font-bold text-theme-text-primary mb-8">Settings</h1>
             
             <div className="max-w-4xl mx-auto">
                 {/* Persona Selection */}
-                <div className="bg-brand-mid p-8 rounded-xl border border-brand-light">
-                    <h2 className="text-xl font-semibold text-white mb-2">Tell us about you</h2>
-                    <p className="text-brand-text-muted text-sm mb-6">Selecting a persona helps us customize the app's features, alerts, and insights for your specific needs.</p>
+                <div className="bg-theme-surface p-8 rounded-lg border border-theme-border shadow-lg">
+                    <h2 className="text-xl font-semibold text-theme-text-primary mb-2">Tell us about you</h2>
+                    <p className="text-theme-text-secondary text-sm mb-6">Selecting a persona helps us customize the app's features, alerts, and insights for your specific needs.</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {personaOptions.map(p => (
                             <button key={p.id} onClick={() => setFormState(prev => ({...prev, personaCategory: p.id as PersonaCategory}))}
-                                className={`p-4 rounded-xl border-2 text-left transition-all duration-200 transform ${formState.personaCategory === p.id ? 'bg-brand-accent/20 border-brand-accent scale-105 shadow-lg' : 'bg-brand-light border-brand-light hover:border-brand-text-muted hover:shadow-md'}`}>
-                                <div className={`mb-3 transition-colors ${formState.personaCategory === p.id ? 'text-brand-accent':'text-brand-text'}`}>{p.icon}</div>
-                                <h3 className="font-semibold text-white">{p.name}</h3>
-                                <p className="text-xs text-brand-text-muted mt-1">{p.description}</p>
+                                className={`p-4 rounded-lg border-2 text-left transition-all duration-200 transform hover:scale-105 ${formState.personaCategory === p.id ? 'bg-theme-primary/10 border-theme-primary shadow-lg' : 'bg-slate-50 border-theme-border hover:border-slate-300'}`}>
+                                <div className={`mb-3 transition-colors ${formState.personaCategory === p.id ? 'text-theme-primary':'text-theme-text-primary'}`}>{p.icon}</div>
+                                <h3 className="font-semibold text-theme-text-primary">{p.name}</h3>
+                                <p className="text-xs text-theme-text-secondary mt-1">{p.description}</p>
                             </button>
                         ))}
                     </div>
                 </div>
 
                 {/* Dynamic Persona Details */}
-                <div className="bg-brand-mid p-8 rounded-xl border border-brand-light mt-8">
-                    <h2 className="text-xl font-semibold text-white mb-6">Your Profile Details</h2>
+                <div className="bg-theme-surface p-8 rounded-lg border border-theme-border mt-8 shadow-lg">
+                    <h2 className="text-xl font-semibold text-theme-text-primary mb-6">Your Profile Details</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                         <FormInput label="Default Location" id="location">
                              <input type="text" id="location" value={formState.location} onChange={e => setFormState(prev => ({...prev, location: e.target.value}))}
                                 placeholder="e.g., San Francisco, CA"
-                                className="w-full bg-brand-light border-brand-light rounded-lg p-3 text-white focus:ring-brand-accent focus:border-brand-accent" />
+                                className="w-full bg-slate-50 border-slate-300 rounded-lg p-3 text-theme-text-primary focus:ring-theme-primary focus:border-theme-primary" />
                         </FormInput>
 
                         {formState.personaCategory !== 'resident' && (
@@ -129,12 +129,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                                 <FormInput label="Job Title" id="jobTitle">
                                     <input type="text" id="jobTitle" value={formState.jobTitle} onChange={e => setFormState(prev => ({...prev, jobTitle: e.target.value}))}
                                         placeholder={formState.personaCategory === 'health_guardian' ? 'e.g., School Nurse' : 'e.g., Transportation Planner'}
-                                        className="w-full bg-brand-light border-brand-light rounded-lg p-3 text-white focus:ring-brand-accent focus:border-brand-accent" />
+                                        className="w-full bg-slate-50 border-slate-300 rounded-lg p-3 text-theme-text-primary focus:ring-theme-primary focus:border-theme-primary" />
                                 </FormInput>
                                 <FormInput label="Organization / Company" id="organization">
                                     <input type="text" id="organization" value={formState.organization} onChange={e => setFormState(prev => ({...prev, organization: e.target.value}))}
                                         placeholder="e.g., Cairo Public Schools"
-                                        className="w-full bg-brand-light border-brand-light rounded-lg p-3 text-white focus:ring-brand-accent focus:border-brand-accent" />
+                                        className="w-full bg-slate-50 border-slate-300 rounded-lg p-3 text-theme-text-primary focus:ring-theme-primary focus:border-theme-primary" />
                                 </FormInput>
                             </>
                         )}
@@ -147,7 +147,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                         {formState.personaCategory === 'public_official' && (
                             <FormInput label="Department / Sector" id="publicSector">
                                 <select id="publicSector" value={formState.publicSector} onChange={e => setFormState(prev => ({...prev, publicSector: e.target.value as PublicSector}))}
-                                    className="w-full bg-brand-light border-brand-light rounded-lg p-3 text-white focus:ring-brand-accent focus:border-brand-accent">
+                                    className="w-full bg-slate-50 border-slate-300 rounded-lg p-3 text-theme-text-primary focus:ring-theme-primary focus:border-theme-primary">
                                     <option value="">Select a sector</option>
                                     {publicSectorOptions.map(opt => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
                                 </select>
@@ -156,7 +156,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                          {formState.personaCategory === 'tourism_pro' && (
                             <FormInput label="Primary Focus" id="tourismFocus">
                                 <select id="tourismFocus" value={formState.tourismFocus} onChange={e => setFormState(prev => ({...prev, tourismFocus: e.target.value as TourismFocus}))}
-                                    className="w-full bg-brand-light border-brand-light rounded-lg p-3 text-white focus:ring-brand-accent focus:border-brand-accent">
+                                    className="w-full bg-slate-50 border-slate-300 rounded-lg p-3 text-theme-text-primary focus:ring-theme-primary focus:border-theme-primary">
                                     <option value="">Select a focus</option>
                                     {tourismFocusOptions.map(opt => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
                                 </select>
@@ -166,7 +166,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                         {formState.personaCategory === 'resident' && (
                              <FormInput label="Health Sensitivity Group" id="sensitivity">
                                 <select id="sensitivity" value={formState.sensitivity} onChange={e => setFormState(prev => ({...prev, sensitivity: e.target.value as Sensitivity}))}
-                                    className="w-full bg-brand-light border-brand-light rounded-lg p-3 text-white focus:ring-brand-accent focus:border-brand-accent">
+                                    className="w-full bg-slate-50 border-slate-300 rounded-lg p-3 text-theme-text-primary focus:ring-theme-primary focus:border-theme-primary">
                                     {SENSITIVITY_GROUPS.map(group => <option key={group.id} value={group.id}>{group.name}</option>)}
                                 </select>
                             </FormInput>
@@ -180,20 +180,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                     </div>
                 </div>
 
-                <div className="bg-brand-mid p-8 rounded-xl border border-brand-light mt-8 space-y-6">
+                <div className="bg-theme-surface p-8 rounded-lg border border-theme-border mt-8 space-y-6 shadow-lg">
                     <div>
-                        <h2 className="text-xl font-semibold text-white mb-2">Resources</h2>
-                         <p className="text-brand-text-muted text-sm">Learn more about air quality and the data sources we use.</p>
+                        <h2 className="text-xl font-semibold text-theme-text-primary mb-2">Resources</h2>
+                         <p className="text-theme-text-secondary text-sm">Learn more about air quality and the data sources we use.</p>
                     </div>
                     <div className="flex flex-col space-y-3">
-                       <a href="#" className="text-brand-accent hover:underline">Data Transparency & Sources</a>
-                       <a href="#" className="text-brand-accent hover:underline">Understanding AQI</a>
-                       <a href="#" className="text-brand-accent hover:underline">About the TEMPO Mission</a>
+                       <a href="#" className="text-theme-primary hover:underline hover:text-theme-primary-hover">Data Transparency & Sources</a>
+                       <a href="#" className="text-theme-primary hover:underline hover:text-theme-primary-hover">Understanding AQI</a>
+                       <a href="#" className="text-theme-primary hover:underline hover:text-theme-primary-hover">About the TEMPO Mission</a>
                     </div>
                 </div>
 
                 <div className="mt-8 flex justify-end">
-                    <button onClick={handleSave} className="bg-brand-accent hover:bg-brand-accent-hover text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                    <button onClick={handleSave} className="bg-theme-primary hover:bg-theme-primary-hover text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg shadow-theme-primary/20 hover:shadow-glow-primary transform hover:scale-105">
                         Save Changes
                     </button>
                 </div>

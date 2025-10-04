@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cleaner, Safer Skies</title>
+    <title>CSS: Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -15,66 +15,49 @@
         theme: {
           extend: {
             colors: {
-              'brand-dark': '#0F172A', // Slate 900
-              'brand-mid': '#1E293B',  // Slate 800
-              'brand-light': '#334155', // Slate 700
-              'brand-text': '#E2E8F0', // Slate 200
-              'brand-text-muted': '#94A3B8', // Slate 400
-              'brand-accent': '#22C55E', // Green 500
-              'brand-accent-hover': '#16A34A', // Green 600
+              'theme-bg': '#F8FAFC',             // Slate 50
+              'theme-surface': '#FFFFFF',          // White
+              'theme-border': '#E2E8F0',          // Slate 200
+              'theme-text-primary': '#1E293B',     // Slate 800
+              'theme-text-secondary': '#64748B',  // Slate 500
+              'theme-primary': '#3B82F6',        // Blue 500
+              'theme-primary-hover': '#60A5FA',  // Blue 400
+              'theme-accent': '#F97316',         // Orange 500
             },
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
+                mono: ['Roboto Mono', 'monospace'],
             },
             animation: {
-              'fade-in': 'fadeIn 0.3s ease-in-out',
-              'fade-in-up': 'fadeInUp 0.3s ease-in-out',
-              'fade-in-up-fast': 'fadeInUp 0.2s ease-in-out',
+              'fade-in': 'fadeIn 0.5s ease-out forwards',
+              'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
             },
             keyframes: {
               fadeIn: {
-                '0%': { opacity: '0' },
-                '100%': { opacity: '1' },
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 },
               },
               fadeInUp: {
-                '0%': { opacity: '0', transform: 'translateY(10px)' },
-                '100%': { opacity: '1', transform: 'translateY(0)' },
+                '0%': { opacity: 0, transform: 'translateY(10px)' },
+                '100%': { opacity: 1, transform: 'translateY(0)' },
               },
+            },
+            boxShadow: {
+              'glow-primary': '0 0 15px rgba(59, 130, 246, 0.4)', // Blue 500 glow
             }
           },
         },
       }
     </script>
-    <style>
-      /* Custom scrollbar for a better dark theme experience */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #0F172A; /* brand-dark */
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #334155; /* brand-light */
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #475569; /* Slate 600 */
-      }
-      /* Custom Leaflet popup styles */
-      .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-          background: #1E293B !important; /* brand-mid */
-          color: #E2E8F0 !important; /* brand-text */
-          box-shadow: 0 3px 14px rgba(0,0,0,0.4) !important;
-          border-radius: 8px !important;
-      }
-       .leaflet-popup-content {
-          margin: 14px !important;
-      }
-    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      body {
+        background-color: #F8FAFC; /* theme-bg */
+        color: #1E293B; /* theme-text-primary */
+      }
+    </style>
   <script type="importmap">
 {
   "imports": {

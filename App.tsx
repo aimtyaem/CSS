@@ -33,7 +33,7 @@ const App: React.FC = () => {
 
   const handlePollutantChange = useCallback((pollutant: Pollutant) => {
     setSelectedPollutants(prev => 
-      prev.includes(pollutant) 
+      prev.includes( pollutant) 
         ? prev.filter(p => p !== pollutant) 
         : [...prev, pollutant]
     );
@@ -68,7 +68,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="bg-brand-dark text-brand-text font-sans flex h-screen overflow-hidden">
+    <div className="bg-theme-bg text-theme-text-primary font-sans flex h-screen overflow-hidden">
       <Sidebar 
         currentView={currentView} 
         onNavigate={setCurrentView}

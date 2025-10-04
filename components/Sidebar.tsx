@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import type { View, Pollutant, DataSource } from '../types';
 import { POLLUTANTS } from '../constants';
-import { MapIcon, ChartBarIcon, BellIcon, CogIcon, TrendingUpIcon, ChevronDownIcon, WindIcon } from './icons';
+import { MapIcon, ChartBarIcon, BellIcon, CogIcon, TrendingUpIcon, ChevronDownIcon, GlobeAltIcon } from './icons';
 
 interface NavItemProps {
     icon: React.ReactNode;
@@ -14,10 +14,10 @@ interface NavItemProps {
 const NavItem: React.FC<NavItemProps> = ({ icon, label, isActive, onClick }) => (
     <button
         onClick={onClick}
-        className={`flex items-center w-full px-4 py-3 text-sm font-medium transition-colors duration-200 ${
+        className={`flex items-center w-full px-4 py-3 text-sm font-medium transition-all duration-200 border-l-4 rounded-r-md ${
             isActive
-                ? 'bg-brand-accent text-white'
-                : 'text-brand-text-muted hover:bg-brand-light hover:text-brand-text'
+                ? 'bg-theme-primary/10 text-theme-primary border-theme-primary'
+                : 'text-theme-text-secondary border-transparent hover:bg-theme-primary/10 hover:text-theme-text-primary'
         }`}
     >
         {icon}
@@ -34,10 +34,10 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, children
     const [isOpen, setIsOpen] = useState(true);
 
     return (
-        <div className="py-4 border-b border-brand-light">
+        <div className="py-4 border-b border-theme-border">
             <button onClick={() => setIsOpen(!isOpen)} className="flex justify-between items-center w-full px-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-brand-text">{title}</h3>
-                <ChevronDownIcon className={`w-5 h-5 text-brand-text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <h3 className="text-sm font-mono font-medium uppercase tracking-widest text-theme-text-secondary">{title}</h3>
+                <ChevronDownIcon className={`w-5 h-5 text-theme-text-secondary transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
             {isOpen && <div className="mt-4 px-4 space-y-3">{children}</div>}
         </div>
@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onDataSourceChange
 }) => {
     const navItems = [
-        { id: 'map', icon: <MapIcon className="w-5 h-5" />, label: 'Map' },
+        { id: 'map', icon: <MapIcon className="w-5 h-5" />, label: 'Map View' },
         { id: 'forecast', icon: <ChartBarIcon className="w-5 h-5" />, label: 'Forecast' },
         { id: 'trends', icon: <TrendingUpIcon className="w-5 h-5" />, label: 'Trends & Insights' },
         { id: 'alerts', icon: <BellIcon className="w-5 h-5" />, label: 'Alerts' },
@@ -71,54 +71,54 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ];
 
     return (
-        <aside className="w-72 bg-brand-mid flex flex-col flex-shrink-0 border-r border-brand-light">
-            <div className="px-6 py-4 flex items-center space-x-3 border-b border-brand-light">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
-                   <WindIcon className="w-6 h-6 text-white"/>
+        <aside className="w-72 bg-theme-surface flex flex-col flex-shrink-0 border-r border-theme-border">
+            <div className="px-6 py-4 flex items-center space-x-3 border-b border-theme-border">
+                 <div className="w-10 h-10 bg-gradient-to-br from-theme-primary/10 to-transparent rounded-lg flex items-center justify-center border border-theme-primary/20">
+                   <GlobeAltIcon className="w-6 h-6 text-theme-primary"/>
                 </div>
                 <div>
-                    <h1 className="text-lg font-bold text-white">Cleaner, Safer Skies</h1>
-                    <p className="text-xs text-brand-text-muted">Air Quality Prediction</p>
+                    <h1 className="text-lg font-bold text-theme-text-primary">CSS</h1>
+                    <p className="text-xs text-theme-text-secondary font-mono">Command Center</p>
                 </div>
             </div>
             
             {currentView === 'map' && (
               <div className="flex-1 overflow-y-auto">
-                  <CollapsibleSection title="Pollutants">
+                  <CollapsibleSection title="Layers">
                       {POLLUTANTS.map(p => (
-                          <label key={p} className="flex items-center text-sm text-brand-text cursor-pointer">
+                          <label key={p} className="flex items-center text-sm text-theme-text-primary cursor-pointer">
                               <input
                                   type="checkbox"
                                   checked={selectedPollutants.includes(p)}
                                   onChange={() => onPollutantChange(p)}
-                                  className="form-checkbox h-4 w-4 bg-brand-light border-brand-light rounded text-brand-accent focus:ring-brand-accent"
+                                  className="form-checkbox h-4 w-4 bg-slate-100 border-slate-300 rounded text-theme-primary focus:ring-theme-primary focus:ring-offset-theme-surface"
                               />
-                              <span className="ml-3">{p}</span>
+                              <span className="ml-3 font-mono">{p}</span>
                           </label>
                       ))}
                   </CollapsibleSection>
 
                   <CollapsibleSection title="Data Source">
                       <div className="flex flex-col space-y-2">
-                          <label className="flex items-center text-sm text-brand-text cursor-pointer">
+                          <label className="flex items-center text-sm text-theme-text-primary cursor-pointer">
                               <input
                                   type="radio"
                                   name="dataSource"
                                   value="satellite"
                                   checked={dataSource === 'satellite'}
                                   onChange={() => onDataSourceChange('satellite')}
-                                  className="form-radio h-4 w-4 bg-brand-light border-brand-light text-brand-accent focus:ring-brand-accent"
+                                  className="form-radio h-4 w-4 bg-slate-100 border-slate-300 text-theme-primary focus:ring-theme-primary focus:ring-offset-theme-surface"
                               />
                               <span className="ml-3">TEMPO Satellite</span>
                           </label>
-                          <label className="flex items-center text-sm text-brand-text cursor-pointer">
+                          <label className="flex items-center text-sm text-theme-text-primary cursor-pointer">
                               <input
                                   type="radio"
                                   name="dataSource"
                                   value="ground"
                                   checked={dataSource === 'ground'}
                                   onChange={() => onDataSourceChange('ground')}
-                                  className="form-radio h-4 w-4 bg-brand-light border-brand-light text-brand-accent focus:ring-brand-accent"
+                                  className="form-radio h-4 w-4 bg-slate-100 border-slate-300 text-theme-primary focus:ring-theme-primary focus:ring-offset-theme-surface"
                               />
                               <span className="ml-3">Ground Stations</span>
                           </label>

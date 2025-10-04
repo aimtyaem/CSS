@@ -47,7 +47,6 @@ export interface PollutantLayer {
     id: Pollutant;
     name: string;
     unit: string;
-    imageUrl: string;
     gradient: string;
 }
 
