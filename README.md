@@ -57,9 +57,9 @@ Cleanest, Safe Skies is an advanced web application for monitoring, forecasting,
 
 **License:** MIT
 
-**Contributors:** [Your Team/Name]
+**Contributors:** AIMTY team
 
-**Contact:** [GitHub Issues or email]
+**Contact:** aimt16@hotmail.com
 
 ---
 
