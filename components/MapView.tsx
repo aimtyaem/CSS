@@ -48,8 +48,8 @@ const AqiCard: React.FC<{
     onClose: () => void;
 }> = ({ location, aqiData, loading, onShowForecast, onClose }) => {
     return (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-8 ml-[14rem] bg-brand-mid/80 backdrop-blur-sm border border-brand-light rounded-lg shadow-2xl p-6 w-80 text-brand-text z-[1001] animate-fade-in">
-            <button onClick={onClose} className="absolute top-2 right-2 p-1 text-brand-text-muted hover:text-white transition-colors">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-mid/90 backdrop-blur-md border border-brand-light rounded-xl shadow-2xl p-8 w-96 text-brand-text z-[1001] animate-fade-in">
+            <button onClick={onClose} className="absolute top-3 right-3 p-1 text-brand-text-muted hover:text-white transition-colors">
                 <XIcon className="w-5 h-5" />
             </button>
             {loading ? (
@@ -149,7 +149,7 @@ const MapSearch: React.FC<{ onSearch: (location: Location) => void }> = ({ onSea
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search for a city..."
-                    className="w-full bg-brand-mid/80 backdrop-blur-sm border border-brand-light rounded-full shadow-lg py-3 pl-12 pr-12 text-brand-text placeholder-brand-text-muted focus:outline-none focus:ring-2 focus:ring-brand-accent"
+                    className="w-full bg-brand-mid/80 backdrop-blur-md border border-brand-light rounded-full shadow-lg py-3 pl-12 pr-12 text-brand-text placeholder-brand-text-muted focus:outline-none focus:ring-2 focus:ring-brand-accent"
                 />
                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                     <SearchIcon className="w-5 h-5 text-brand-text-muted" />
@@ -162,8 +162,8 @@ const MapSearch: React.FC<{ onSearch: (location: Location) => void }> = ({ onSea
             </div>
             
             {results.length > 0 && (
-                <div className="absolute mt-2 w-full bg-brand-mid/90 backdrop-blur-sm border border-brand-light rounded-lg shadow-lg max-h-60 overflow-y-auto animate-fade-in-up-fast">
-                    <ul>
+                <div className="absolute mt-2 w-full bg-brand-mid/90 backdrop-blur-md border border-brand-light rounded-lg shadow-lg max-h-60 overflow-y-auto animate-fade-in-up-fast">
+                    <ul className="divide-y divide-brand-light">
                         {results.map((result) => (
                             <li key={`${result.lat}-${result.lon}`}>
                                 <button
@@ -331,7 +331,7 @@ export const MapView: React.FC<{
     }, [activeLayer, mapRef.current]);
 
     return (
-        <div className="relative flex-1 bg-brand-dark" style={{height: '100%', width: '100%'}}>
+        <div className="relative flex-1 bg-brand-dark animate-fade-in" style={{height: '100%', width: '100%'}}>
             <div ref={mapContainerRef} className="w-full h-full" />
             <MapSearch onSearch={setLocation} />
             <MapControls map={mapRef.current} />

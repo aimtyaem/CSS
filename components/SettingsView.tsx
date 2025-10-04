@@ -94,19 +94,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
     };
     
     return (
-        <div className="p-8 flex-1 overflow-y-auto bg-brand-dark">
+        <div className="p-8 flex-1 overflow-y-auto bg-brand-dark animate-fade-in">
             <h1 className="text-3xl font-bold text-white mb-8">Settings</h1>
             
             <div className="max-w-4xl mx-auto">
                 {/* Persona Selection */}
-                <div className="bg-brand-mid p-8 rounded-lg border border-brand-light">
+                <div className="bg-brand-mid p-8 rounded-xl border border-brand-light">
                     <h2 className="text-xl font-semibold text-white mb-2">Tell us about you</h2>
                     <p className="text-brand-text-muted text-sm mb-6">Selecting a persona helps us customize the app's features, alerts, and insights for your specific needs.</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {personaOptions.map(p => (
                             <button key={p.id} onClick={() => setFormState(prev => ({...prev, personaCategory: p.id as PersonaCategory}))}
-                                className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${formState.personaCategory === p.id ? 'bg-brand-accent/20 border-brand-accent' : 'bg-brand-light border-brand-light hover:border-brand-text-muted'}`}>
-                                <div className={`mb-3 text-${formState.personaCategory === p.id ? 'brand-accent':'brand-text'}`}>{p.icon}</div>
+                                className={`p-4 rounded-xl border-2 text-left transition-all duration-200 transform ${formState.personaCategory === p.id ? 'bg-brand-accent/20 border-brand-accent scale-105 shadow-lg' : 'bg-brand-light border-brand-light hover:border-brand-text-muted hover:shadow-md'}`}>
+                                <div className={`mb-3 transition-colors ${formState.personaCategory === p.id ? 'text-brand-accent':'text-brand-text'}`}>{p.icon}</div>
                                 <h3 className="font-semibold text-white">{p.name}</h3>
                                 <p className="text-xs text-brand-text-muted mt-1">{p.description}</p>
                             </button>
@@ -115,7 +115,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                 </div>
 
                 {/* Dynamic Persona Details */}
-                <div className="bg-brand-mid p-8 rounded-lg border border-brand-light mt-8">
+                <div className="bg-brand-mid p-8 rounded-xl border border-brand-light mt-8">
                     <h2 className="text-xl font-semibold text-white mb-6">Your Profile Details</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                         <FormInput label="Default Location" id="location">
@@ -180,7 +180,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                     </div>
                 </div>
 
-                <div className="bg-brand-mid p-8 rounded-lg border border-brand-light mt-8 space-y-6">
+                <div className="bg-brand-mid p-8 rounded-xl border border-brand-light mt-8 space-y-6">
                     <div>
                         <h2 className="text-xl font-semibold text-white mb-2">Resources</h2>
                          <p className="text-brand-text-muted text-sm">Learn more about air quality and the data sources we use.</p>

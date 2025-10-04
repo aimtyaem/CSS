@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import type { View, Pollutant, DataSource } from '../types';
 import { POLLUTANTS } from '../constants';
-import { MapIcon, ChartBarIcon, BellIcon, CogIcon, TrendingUpIcon, ChevronDownIcon, PlusIcon } from './icons';
+import { MapIcon, ChartBarIcon, BellIcon, CogIcon, TrendingUpIcon, ChevronDownIcon, WindIcon } from './icons';
 
 interface NavItemProps {
     icon: React.ReactNode;
@@ -74,7 +74,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <aside className="w-72 bg-brand-mid flex flex-col flex-shrink-0 border-r border-brand-light">
             <div className="px-6 py-4 flex items-center space-x-3 border-b border-brand-light">
                 <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
-                   <PlusIcon className="w-6 h-6 text-white"/>
+                   <WindIcon className="w-6 h-6 text-white"/>
                 </div>
                 <div>
                     <h1 className="text-lg font-bold text-white">Cleaner, Safer Skies</h1>

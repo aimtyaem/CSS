@@ -9,7 +9,7 @@ type ForecastPeriod = '24h' | '7d';
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-brand-light p-4 rounded-lg border border-brand-text-muted/50">
+      <div className="bg-brand-light p-3 rounded-lg border border-brand-text-muted/50">
         <p className="label text-brand-text font-semibold">{`${label}`}</p>
         {payload.map((pld: any) => (
           <div key={pld.dataKey} style={{ color: pld.color }}>
@@ -99,12 +99,12 @@ export const ForecastView: React.FC<{location: Location | null}> = ({ location }
     }
 
     return (
-        <div className="p-8 flex-1 overflow-y-auto bg-brand-dark">
+        <div className="p-8 flex-1 overflow-y-auto bg-brand-dark animate-fade-in">
             <h1 className="text-3xl font-bold text-white mb-2">Air Quality Forecast</h1>
             <p className="text-brand-text-muted mb-8">{location.name}</p>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-brand-mid p-6 rounded-lg border border-brand-light">
+                <div className="lg:col-span-2 bg-brand-mid p-6 rounded-xl border border-brand-light">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-semibold text-white">Pollutant Levels</h2>
                         <div className="flex bg-brand-light rounded-lg p-1">
@@ -136,11 +136,11 @@ export const ForecastView: React.FC<{location: Location | null}> = ({ location }
                     </div>
                 </div>
 
-                <div className="bg-brand-mid p-6 rounded-lg border border-brand-light">
+                <div className="bg-brand-mid p-6 rounded-xl border border-brand-light">
                     <h2 className="text-xl font-semibold text-white mb-6">Weather Outlook</h2>
                     <div className="space-y-6">
                         <div className="flex items-center space-x-4">
-                             <div className="p-3 bg-yellow-400/10 rounded-lg">
+                             <div className="p-3 bg-yellow-400/10 rounded-xl">
                                 <SunIcon className="w-8 h-8 text-yellow-400" />
                             </div>
                             <div>
@@ -150,7 +150,7 @@ export const ForecastView: React.FC<{location: Location | null}> = ({ location }
                             </div>
                         </div>
                         <div className="flex items-center space-x-4">
-                             <div className="p-3 bg-sky-400/10 rounded-lg">
+                             <div className="p-3 bg-sky-400/10 rounded-xl">
                                 <WindIcon className="w-8 h-8 text-sky-400" />
                             </div>
                             <div>

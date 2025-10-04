@@ -85,7 +85,7 @@ export const TrendsView: React.FC<{location: Location | null}> = ({ location }) 
 
         return (
             <>
-                <div className="bg-brand-mid p-6 rounded-lg border border-brand-light mb-8">
+                <div className="bg-brand-mid p-6 rounded-xl border border-brand-light mb-8">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-semibold text-white">Historical AQI</h2>
                         <div className="flex bg-brand-light rounded-lg p-1">
@@ -111,7 +111,7 @@ export const TrendsView: React.FC<{location: Location | null}> = ({ location }) 
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="bg-brand-mid p-6 rounded-lg border border-brand-light">
+                    <div className="bg-brand-mid p-6 rounded-xl border border-brand-light">
                         <h2 className="text-xl font-semibold text-white mb-4">Data Source Attribution</h2>
                         <p className="text-sm text-brand-text-muted mb-6">This chart shows a breakdown of data sources used for the selected time range.</p>
                         <div>
@@ -137,7 +137,7 @@ export const TrendsView: React.FC<{location: Location | null}> = ({ location }) 
                             </div>
                         </div>
                     </div>
-                    <div className="bg-brand-mid p-6 rounded-lg border border-brand-light">
+                    <div className="bg-brand-mid p-6 rounded-xl border border-brand-light">
                         <h2 className="text-xl font-semibold text-white mb-4">Pollutant Hotspots (Heatmap)</h2>
                         <p className="text-sm text-brand-text-muted mb-6">Visualizing areas with historically higher concentrations of PM2.5 over the last year.</p>
                         <div className="aspect-video bg-brand-dark rounded-lg flex items-center justify-center">
@@ -150,7 +150,7 @@ export const TrendsView: React.FC<{location: Location | null}> = ({ location }) 
     }
 
     return (
-        <div className="p-8 flex-1 overflow-y-auto bg-brand-dark">
+        <div className="p-8 flex-1 overflow-y-auto bg-brand-dark animate-fade-in">
             <h1 className="text-3xl font-bold text-white mb-2">Trends & Insights</h1>
             <p className="text-brand-text-muted mb-8">Explore historical air quality data for {location?.name || 'a selected location'}</p>
             {renderContent()}

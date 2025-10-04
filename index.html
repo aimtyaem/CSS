@@ -26,10 +26,52 @@
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
             },
+            animation: {
+              'fade-in': 'fadeIn 0.3s ease-in-out',
+              'fade-in-up': 'fadeInUp 0.3s ease-in-out',
+              'fade-in-up-fast': 'fadeInUp 0.2s ease-in-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+            }
           },
         },
       }
     </script>
+    <style>
+      /* Custom scrollbar for a better dark theme experience */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0F172A; /* brand-dark */
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155; /* brand-light */
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569; /* Slate 600 */
+      }
+      /* Custom Leaflet popup styles */
+      .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+          background: #1E293B !important; /* brand-mid */
+          color: #E2E8F0 !important; /* brand-text */
+          box-shadow: 0 3px 14px rgba(0,0,0,0.4) !important;
+          border-radius: 8px !important;
+      }
+       .leaflet-popup-content {
+          margin: 14px !important;
+      }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">

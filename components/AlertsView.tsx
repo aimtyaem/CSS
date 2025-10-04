@@ -20,11 +20,11 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ alerts, setAlerts, userS
     };
 
     return (
-        <div className="p-8 flex-1 overflow-y-auto bg-brand-dark">
+        <div className="p-8 flex-1 overflow-y-auto bg-brand-dark animate-fade-in">
             <h1 className="text-3xl font-bold text-white mb-8">Alerts & Notifications</h1>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-brand-mid p-6 rounded-lg border border-brand-light">
+                <div className="bg-brand-mid p-6 rounded-xl border border-brand-light">
                     <h2 className="text-xl font-semibold text-white mb-4">Your Alerts</h2>
                     <p className="text-brand-text-muted mb-6">Receive notifications when air quality reaches levels you care about.</p>
 
@@ -49,20 +49,20 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ alerts, setAlerts, userS
                     </div>
                 </div>
                 
-                <div className="bg-brand-mid p-6 rounded-lg border border-brand-light">
+                <div className="bg-brand-mid p-6 rounded-xl border border-brand-light">
                     <h2 className="text-xl font-semibold text-white mb-4">Customize Alerts</h2>
                     <p className="text-brand-text-muted mb-6">Set your own thresholds for different pollutants.</p>
                     
                     <form className="space-y-6">
                         <div>
                             <label htmlFor="pollutant" className="block text-sm font-medium text-brand-text-muted mb-2">Pollutant</label>
-                            <select id="pollutant" className="w-full bg-brand-light border-brand-light rounded-lg p-2 text-white focus:ring-brand-accent focus:border-brand-accent">
+                            <select id="pollutant" className="w-full bg-brand-light border-brand-light rounded-lg p-3 text-white focus:ring-brand-accent focus:border-brand-accent">
                                 {POLLUTANTS.map(p => <option key={p}>{p}</option>)}
                             </select>
                         </div>
                         <div>
                             <label htmlFor="threshold" className="block text-sm font-medium text-brand-text-muted mb-2">AQI Threshold</label>
-                            <input type="number" id="threshold" defaultValue="120" className="w-full bg-brand-light border-brand-light rounded-lg p-2 text-white focus:ring-brand-accent focus:border-brand-accent"/>
+                            <input type="number" id="threshold" defaultValue="120" className="w-full bg-brand-light border-brand-light rounded-lg p-3 text-white focus:ring-brand-accent focus:border-brand-accent"/>
                         </div>
                         <button type="button" className="w-full bg-brand-accent hover:bg-brand-accent-hover text-white font-bold py-2 px-4 rounded-lg transition-colors">
                             Add New Alert
@@ -75,7 +75,7 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ alerts, setAlerts, userS
                     </div>
                 </div>
 
-                <div className="md:col-span-2 bg-brand-mid p-6 rounded-lg border border-brand-light">
+                <div className="md:col-span-2 bg-brand-mid p-6 rounded-xl border border-brand-light">
                     <h2 className="text-xl font-semibold text-white mb-4">Alert History</h2>
                     <ul className="space-y-3">
                         <li className="text-sm"><span className="font-semibold text-orange-400">[Moderate]</span> PM2.5 level is 89. (2 hours ago)</li>
