@@ -1,4 +1,5 @@
 # CSS: Command Center
+[![CSS](https://img.youtube.com/vi/DvUbp3ltuQg/0.jpg)](https://www.youtube.com/watch?feature=shared&v=DvUbp3ltuQg)
 
 An interactive web application to understand and act on local air quality forecasts by integrating satellite, ground-based, and weather data. This application provides real-time maps, forecasts, health alerts, and historical trends in a user-friendly command center interface.
 
