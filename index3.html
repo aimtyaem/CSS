@@ -128,6 +128,150 @@
     .layer-controls button.active {
       background: rgba(79, 195, 247, 0.3);
     }
+    /* Info card styles */
+    .info-card {
+      position: absolute;
+      top: 80px;
+      left: 20px;
+      background: rgba(22, 43, 62, 0.9);
+      backdrop-filter: blur(10px);
+      width: 380px;
+      max-width: 90vw;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      transform: translateY(0);
+      transition: all 0.3s ease;
+    }
+    .info-card.hidden {
+      transform: translateY(-20px);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .info-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .info-card-content {
+      padding: 16px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    .info-card-tabs {
+      display: flex;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 4px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .info-card-tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+    .info-card-tab.active {
+      background-color: rgba(79, 195, 247, 0.3);
+      color: #4fc3f7;
+    }
+    .info-card-close {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+    .info-card-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    .aqi-display {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .aqi-value {
+      font-size: 48px;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+    .aqi-status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .pollutant-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .pollutant-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 6px;
+    }
+    .pollutant-name {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+    .pollutant-value {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .recommendation {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.8);
+      margin-top: 16px;
+    }
+    .chart-container {
+      height: 200px;
+      margin-bottom: 16px;
+    }
+    .forecast-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .forecast-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 6px;
+    }
+    .forecast-day {
+      font-weight: 600;
+    }
+    .forecast-aqi {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .aqi-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
   </style>
 </head>
 <body class="bg-gray-900 text-white antialiased">
@@ -268,54 +412,56 @@
         </div>
       </div>
 
-      <!-- Location Card -->
-      <div id="locationCard" class="absolute top-20 left-5 bg-[rgba(22,43,62,0.8)] backdrop-blur-sm w-96 max-w-[90vw] rounded-lg border border-white/10 shadow-2xl z-10 hidden transform transition-all duration-300">
-        <!-- Card Header -->
-        <div class="flex items-center justify-between p-3 border-b border-white/10">
+      <!-- Info Card -->
+      <div id="infoCard" class="info-card hidden">
+        <div class="info-card-header">
           <div>
             <h3 id="cardCity" class="font-bold text-lg text-[#4fc3f7]">Loading...</h3>
             <p id="cardCountry" class="text-sm text-gray-400">Fetching data...</p>
           </div>
-          <button id="cardClose" class="p-2 rounded-full hover:bg-white/10"><i class="fas fa-times"></i></button>
+          <button id="cardClose" class="info-card-close"><i class="fas fa-times"></i></button>
         </div>
         
-        <!-- Card Tabs -->
-        <div class="flex bg-black/20 p-1">
-          <button class="tab-btn flex-1 py-2 text-sm rounded-md active" data-tab="current">Current</button>
-          <button class="tab-btn flex-1 py-2 text-sm rounded-md" data-tab="history">History</button>
-          <button class="tab-btn flex-1 py-2 text-sm rounded-md" data-tab="forecast">Forecast</button>
+        <div class="info-card-tabs">
+          <div class="info-card-tab active" data-tab="current">Current</div>
+          <div class="info-card-tab" data-tab="history">History</div>
+          <div class="info-card-tab" data-tab="forecast">Forecast</div>
         </div>
         
-        <!-- Card Content -->
-        <div class="p-4">
+        <div class="info-card-content">
           <!-- Current Conditions Tab -->
           <div id="current-tab" class="tab-content">
-              <div class="text-center mb-4">
-                  <p class="text-sm text-gray-400">Air Quality Index (AQI)</p>
-                  <div id="cardAqi" class="text-5xl font-bold my-1">--</div>
-                  <div id="cardStatus" class="inline-block px-3 py-1 text-sm rounded-full font-semibold">--</div>
-              </div>
-              <div id="pollutantDetails" class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                  <!-- Pollutant details will be dynamically inserted here -->
-              </div>
-               <p id="cardRecommendations" class="mt-4 text-xs text-center text-gray-300 bg-black/20 p-2 rounded-md"></p>
+            <div class="aqi-display">
+              <p class="text-sm text-gray-400">Air Quality Index (AQI)</p>
+              <div id="cardAqi" class="aqi-value">--</div>
+              <div id="cardStatus" class="aqi-status">--</div>
+            </div>
+            
+            <div class="pollutant-grid">
+              <!-- Pollutant details will be dynamically inserted here -->
+            </div>
+            
+            <div class="recommendation" id="cardRecommendations"></div>
           </div>
 
           <!-- History Tab -->
           <div id="history-tab" class="tab-content hidden">
             <h4 class="text-sm font-semibold text-center mb-2">Last 24 Hours AQI</h4>
-            <canvas id="historyChart" class="w-full h-48"></canvas>
+            <div class="chart-container">
+              <canvas id="historyChart"></canvas>
+            </div>
           </div>
 
           <!-- Forecast Tab -->
           <div id="forecast-tab" class="tab-content hidden">
-              <h4 class="text-sm font-semibold text-center mb-2">7-Day AQI Forecast</h4>
-              <div id="forecast-list" class="space-y-2 text-sm">
-                  <!-- Forecast items will be dynamically inserted here -->
-              </div>
+            <h4 class="text-sm font-semibold text-center mb-2">7-Day AQI Forecast</h4>
+            <div id="forecast-list" class="forecast-list">
+              <!-- Forecast items will be dynamically inserted here -->
+            </div>
           </div>
         </div>
-        <div id="cardUpdated" class="px-4 pb-3 text-xs text-center text-gray-500"></div>
+        
+        <div class="px-4 pb-3 text-xs text-center text-gray-500" id="cardUpdated"></div>
       </div>
 
       <!-- Nested Pages -->
@@ -510,7 +656,7 @@
         sidebarTexts: document.querySelectorAll('.sidebar-text'),
         pollutantsList: document.getElementById('pollutantsList'),
         mapTypeSelect: document.getElementById('mapType'),
-        locationCard: document.getElementById('locationCard'),
+        infoCard: document.getElementById('infoCard'),
         cardClose: document.getElementById('cardClose'),
         searchInput: document.getElementById('searchInput'),
         searchResults: document.getElementById('searchResults'),
@@ -582,7 +728,7 @@
       function initEventListeners() {
         elements.collapseBtn.addEventListener('click', toggleSidebar);
         elements.mapTypeSelect.addEventListener('change', toggleMapDisplay);
-        elements.cardClose.addEventListener('click', () => hideElement(elements.locationCard));
+        elements.cardClose.addEventListener('click', () => hideElement(elements.infoCard));
         elements.searchInput.addEventListener('input', handleSearch);
         elements.locateMeBtn.addEventListener('click', locateUser);
         elements.contrastToggle.addEventListener('click', toggleContrast);
@@ -624,6 +770,17 @@
           }
         });
 
+        // Info card tabs
+        document.querySelectorAll('.info-card-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            const tabName = tab.dataset.tab;
+            document.querySelectorAll('.info-card-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+          });
+        });
+
         // Settings event listeners
         elements.darkModeToggle.addEventListener('change', (e) => {
           settings.darkMode = e.target.checked;
@@ -652,16 +809,6 @@
         elements.autoRefreshToggle.addEventListener('change', (e) => {
           settings.autoRefresh = e.target.checked;
           applySettings();
-        });
-
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tab = btn.dataset.tab;
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-                document.getElementById(`${tab}-tab`).classList.remove('hidden');
-            });
         });
 
         elements.pollutantsList.addEventListener('click', (e) => {
@@ -923,8 +1070,8 @@
       function onMapClick(e) {
           fetchData(e.latlng.lat, e.latlng.lng).then(data => {
               if (data) {
-                  updateLocationCard(data);
-                  showElement(elements.locationCard);
+                  updateInfoCard(data);
+                  showElement(elements.infoCard);
                   map.flyTo([e.latlng.lat, e.latlng.lng], Math.max(map.getZoom(), 8));
               }
           });
@@ -941,8 +1088,8 @@
           const marker = L.marker([lat, lng], { icon: icon });
           marker.bindPopup(`<strong>${city}</strong><br>AQI: ${aqi}`);
           marker.on('click', () => {
-              updateLocationCard(data);
-              showElement(elements.locationCard);
+              updateInfoCard(data);
+              showElement(elements.infoCard);
           });
           return marker;
       }
@@ -979,8 +1126,8 @@
         }, () => alert("Could not get your location."));
       }
 
-      // --- LOCATION CARD LOGIC ---
-      function updateLocationCard(data) {
+      // --- INFO CARD LOGIC ---
+      function updateInfoCard(data) {
           const { current, history, forecast } = data;
           document.getElementById('cardCity').textContent = current.city;
           document.getElementById('cardCountry').textContent = current.country;
@@ -992,9 +1139,14 @@
           statusEl.style.backgroundColor = status.bgColor;
           statusEl.style.color = status.textColor;
 
-          document.getElementById('pollutantDetails').innerHTML = Object.entries(current.pollutants)
+          // Update pollutant grid
+          const pollutantGrid = document.querySelector('.pollutant-grid');
+          pollutantGrid.innerHTML = Object.entries(current.pollutants)
             .map(([key, value]) => `
-                <div class="flex justify-between items-center"><span class="text-gray-400 uppercase">${key}</span> <strong>${value} µg/m³</strong></div>
+                <div class="pollutant-item">
+                    <span class="pollutant-name">${key}</span>
+                    <span class="pollutant-value">${value} µg/m³</span>
+                </div>
             `).join('');
 
           document.getElementById('cardRecommendations').textContent = current.recommendation;
@@ -1044,11 +1196,11 @@
           document.getElementById('forecast-list').innerHTML = forecastData.map(day => {
               const status = getAqiStatus(day.aqi);
               return `
-                  <div class="flex items-center justify-between p-2 rounded-md bg-black/20">
-                      <span class="font-semibold">${day.day}</span>
-                      <div class="flex items-center space-x-2">
+                  <div class="forecast-item">
+                      <span class="forecast-day">${day.day}</span>
+                      <div class="forecast-aqi">
                           <span style="color: ${status.textColor};">${day.aqi}</span>
-                          <div class="w-3 h-3 rounded-full" style="background-color: ${status.color};"></div>
+                          <div class="aqi-indicator" style="background-color: ${status.color};"></div>
                       </div>
                   </div>
               `;
