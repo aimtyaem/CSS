@@ -20,6 +20,7 @@ An interactive web application to understand and act on local air quality foreca
 
 ## 🚀 Getting Started
 [![CSS Demo](https://img.youtube.com/vi/lsKG1Quq_Hg/0.jpg)](https://youtu.be/lsKG1Quq_Hg?si=QEZsq-xubKqRUDL_ "Click to watch the video")
+
 To run this application, simply open the `index.html` file in your web browser. All dependencies are loaded via CDNs, and the application is self-contained.
 
 ## 📂 Project Structure
