@@ -4,7 +4,7 @@
 An interactive web application to understand and act on local air quality forecasts by integrating satellite, ground-based, and weather data. This application provides real-time maps, forecasts, health alerts, and historical trends in a user-friendly command center interface.
 
 ## ✨ Key Features
-![CSS Demo](video/VID_20251005_215309_176.mp4) 
+![Video](https://raw.githubusercontent.com/aimtyaem/CSS/launchpad/video/VID_20251005_215309_176.mp4)
 *   **Interactive Map View:** Visualize air quality data for different pollutants on a dynamic map. Search for locations and get real-time AQI readings.
 *   **Detailed Forecasts:** Get 24-hour and 7-day air quality and weather forecasts for any selected location.
 *   **Customizable Alerts:** Set up personalized notifications for specific pollutants and AQI thresholds.
