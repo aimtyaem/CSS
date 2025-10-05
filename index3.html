@@ -52,9 +52,6 @@
       --card-bg: rgba(10, 10, 10, 0.95);
       --border: rgba(255, 255, 255, 0.4);
     }
-    .leaflet-tile-pane {
-      filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
-    }
     .tab-btn.active {
       background-color: var(--accent);
       color: var(--primary);
@@ -137,23 +134,23 @@
   
   <div id="app" class="flex h-screen overflow-hidden bg-gradient-to-br from-[#0c1b2e] to-[#162b3e]">
     <!-- Sidebar -->
-    <aside id="sidebar" class="w-16 bg-[rgba(22,43,62,0.8)] backdrop-blur-sm border-r border-[rgba(255,255,255,0.1)] flex flex-col z-20 collapsed">
+    <aside id="sidebar" class="w-80 bg-[rgba(22,43,62,0.8)] backdrop-blur-sm border-r border-[rgba(255,255,255,0.1)] flex flex-col z-20">
       <!-- Logo and Collapse Button -->
       <div class="flex items-center justify-between p-4 border-b border-[rgba(255,255,255,0.1)]">
         <div class="flex items-center space-x-3">
           <i class="fas fa-wind text-2xl text-[#4fc3f7]"></i>
-          <div id="logo-text" class="hidden">
+          <div id="logo-text">
             <h1 class="text-lg font-bold text-[#4fc3f7]">CSS</h1>
             <p class="text-xs text-gray-400">Safer Sites</p>
           </div>
         </div>
         <button id="collapseBtn" class="p-2 rounded-full hover:bg-white/10 focus:outline-none">
-          <i id="collapseIcon" class="fas fa-chevron-right transition-transform duration-300"></i>
+          <i id="collapseIcon" class="fas fa-chevron-left transition-transform duration-300"></i>
         </button>
       </div>
       
       <!-- Search -->
-      <div class="p-4 hidden">
+      <div class="p-4">
         <div class="relative">
           <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
           <input id="searchInput" type="text" placeholder="Search locations..." class="w-full bg-black/20 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4fc3f7]">
@@ -206,7 +203,7 @@
       <!-- Settings and Controls -->
       <div class="p-4 mt-auto">
          <h2 class="text-sm font-semibold text-[#4fc3f7] mb-3 flex items-center section-title"><i class="fas fa-tools mr-2"></i><span class="sidebar-text">Controls</span></h2>
-         <div class="sidebar-text space-y-3 hidden">
+         <div class="sidebar-text space-y-3">
              <div>
                 <label for="dataSource" class="block text-xs text-gray-400 mb-1">Data Source</label>
                 <select id="dataSource" class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4fc3f7]">
@@ -223,13 +220,13 @@
              </div>
          </div>
          <div class="mt-4 flex space-x-2">
-             <button id="contrastToggle" class="w-full flex items-center justify-center space-x-2 bg-black/20 p-2 rounded-lg text-sm hover:bg-white/10">
+             <button id="contrastToggle" class="w-1/2 flex items-center justify-center space-x-2 bg-black/20 p-2 rounded-lg text-sm hover:bg-white/10">
                <i class="fas fa-adjust"></i>
-               <span class="sidebar-text hidden">Contrast</span>
+               <span class="sidebar-text">Contrast</span>
              </button>
-             <button id="textSizeToggle" class="w-full flex items-center justify-center space-x-2 bg-black/20 p-2 rounded-lg text-sm hover:bg-white/10">
+             <button id="textSizeToggle" class="w-1/2 flex items-center justify-center space-x-2 bg-black/20 p-2 rounded-lg text-sm hover:bg-white/10">
                <i class="fas fa-text-height"></i>
-               <span class="sidebar-text hidden">Text</span>
+               <span class="sidebar-text">Text</span>
              </button>
          </div>
       </div>
@@ -557,9 +554,10 @@
             zoom: 2,
             zoomControl: false
         });
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
+        
+        // Use standard OpenStreetMap tiles for the base map
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19
         }).addTo(map);
 
@@ -711,7 +709,11 @@
           document.querySelectorAll('.pollutant-text').forEach(el => el.classList.toggle('hidden'));
           
           // Toggle search bar visibility
-          document.querySelector('.p-4.hidden').classList.toggle('hidden');
+          if (isCollapsed) {
+            elements.searchInput.parentElement.classList.add('hidden');
+          } else {
+            elements.searchInput.parentElement.classList.remove('hidden');
+          }
       }
       
       function toggleMapDisplay(e) {
