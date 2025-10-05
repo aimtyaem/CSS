@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSS:Interactive Air Quality & Safety Tool</title>
+  <title>CSS: Interactive Air Quality & Safety Tool</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -12,13 +12,11 @@
   <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
   <style>
-    /* Using a more modern font for better readability */
     body {
       font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       scrollbar-width: thin;
       scrollbar-color: #4fc3f7 #162b3e;
     }
-    /* Custom scrollbar for Webkit browsers */
     body::-webkit-scrollbar {
       width: 8px;
     }
@@ -30,7 +28,6 @@
       border-radius: 10px;
       border: 2px solid #162b3e;
     }
-    /* CSS variables for consistent theming */
     :root {
       --primary: #0c1b2e;
       --secondary: #162b3e;
@@ -43,7 +40,6 @@
       --card-bg: rgba(22, 43, 62, 0.9);
       --border: rgba(255, 255, 255, 0.1);
     }
-    /* High-contrast theme */
     .high-contrast {
       --primary: #000000;
       --secondary: #1a1a1a;
@@ -56,23 +52,19 @@
       --card-bg: rgba(10, 10, 10, 0.95);
       --border: rgba(255, 255, 255, 0.4);
     }
-    /* CSS for the Leaflet map tiles to appear dark */
     .leaflet-tile-pane {
       filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
     }
-    /* Styling for the tab buttons in the location card */
     .tab-btn.active {
       background-color: var(--accent);
       color: var(--primary);
       font-weight: 600;
     }
-    /* Styling for the pollutant list items */
     .pollutant-item.active {
       background-color: rgba(79, 195, 247, 0.15);
       border-left: 3px solid var(--accent);
       padding-left: 10px;
     }
-    /* Smooth transition for sidebar collapse/expand */
     #sidebar {
         transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -88,7 +80,6 @@
     .leaflet-popup-tip {
         background: var(--card-bg);
     }
-    /* New styles for the prediction model and timeframe sections */
     .model-item, .timeframe-item {
       padding: 8px 12px;
       border-radius: 6px;
@@ -102,29 +93,67 @@
       background-color: rgba(79, 195, 247, 0.2);
       border-left: 3px solid var(--accent);
     }
+    .collapsed .pollutant-text, .collapsed .model-text, .collapsed .timeframe-text {
+      display: none;
+    }
+    .collapsed .pollutant-item {
+      justify-content: center;
+      padding-left: 0;
+    }
+    .collapsed .pollutant-item.active {
+      padding-left: 0;
+      border-left: none;
+      background-color: rgba(79, 195, 247, 0.3);
+      border-radius: 8px;
+    }
+    .collapsed .section-title {
+      display: none;
+    }
+    .layer-controls {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      background: rgba(22, 43, 62, 0.9);
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+    }
+    .layer-controls button {
+      margin: 5px;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+    }
+    .layer-controls button.active {
+      background: rgba(79, 195, 247, 0.3);
+    }
   </style>
 </head>
 <body class="bg-gray-900 text-white antialiased">
   
   <div id="app" class="flex h-screen overflow-hidden bg-gradient-to-br from-[#0c1b2e] to-[#162b3e]">
     <!-- Sidebar -->
-    <aside id="sidebar" class="w-80 bg-[rgba(22,43,62,0.8)] backdrop-blur-sm border-r border-[rgba(255,255,255,0.1)] flex flex-col z-20">
+    <aside id="sidebar" class="w-16 bg-[rgba(22,43,62,0.8)] backdrop-blur-sm border-r border-[rgba(255,255,255,0.1)] flex flex-col z-20 collapsed">
       <!-- Logo and Collapse Button -->
       <div class="flex items-center justify-between p-4 border-b border-[rgba(255,255,255,0.1)]">
         <div class="flex items-center space-x-3">
           <i class="fas fa-wind text-2xl text-[#4fc3f7]"></i>
-          <div id="logo-text">
+          <div id="logo-text" class="hidden">
             <h1 class="text-lg font-bold text-[#4fc3f7]">CSS</h1>
-            <p class="text-xs text-gray-400">All Battery Protection</p>
+            <p class="text-xs text-gray-400">Safer Sites</p>
           </div>
         </div>
         <button id="collapseBtn" class="p-2 rounded-full hover:bg-white/10 focus:outline-none">
-          <i id="collapseIcon" class="fas fa-chevron-left transition-transform duration-300"></i>
+          <i id="collapseIcon" class="fas fa-chevron-right transition-transform duration-300"></i>
         </button>
       </div>
       
       <!-- Search -->
-      <div class="p-4">
+      <div class="p-4 hidden">
         <div class="relative">
           <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
           <input id="searchInput" type="text" placeholder="Search locations..." class="w-full bg-black/20 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4fc3f7]">
@@ -134,7 +163,7 @@
       
       <!-- Pollutants List -->
       <div class="p-4 border-b border-[rgba(255,255,255,0.1)]">
-        <h2 class="text-sm font-semibold text-[#4fc3f7] mb-3 flex items-center"><i class="fas fa-smog mr-2"></i><span class="sidebar-text">Pollutants</span></h2>
+        <h2 class="text-sm font-semibold text-[#4fc3f7] mb-3 flex items-center section-title"><i class="fas fa-smog mr-2"></i><span class="sidebar-text">Pollutants</span></h2>
         <ul id="pollutantsList" class="space-y-2">
             <!-- Pollutant items will be dynamically inserted here -->
         </ul>
@@ -142,27 +171,42 @@
 
       <!-- Prediction Model -->
       <div class="p-4 border-b border-[rgba(255,255,255,0.1)]">
-        <h2 class="text-sm font-semibold text-[#4fc3f7] mb-3 flex items-center"><i class="fas fa-chart-line mr-2"></i><span class="sidebar-text">Prediction Model</span></h2>
+        <h2 class="text-sm font-semibold text-[#4fc3f7] mb-3 flex items-center section-title"><i class="fas fa-chart-line mr-2"></i><span class="sidebar-text">Prediction Model</span></h2>
         <div id="predictionModels" class="space-y-1">
-          <div class="model-item active" data-model="cams">CAMS Global</div>
-          <div class="model-item" data-model="geds">GEDS-CF</div>
+          <div class="model-item active flex items-center" data-model="cams">
+            <i class="fas fa-globe w-6 text-center text-[#4fc3f7]"></i>
+            <span class="model-text ml-2">CAMS Global</span>
+          </div>
+          <div class="model-item flex items-center" data-model="geds">
+            <i class="fas fa-chart-bar w-6 text-center text-[#4fc3f7]"></i>
+            <span class="model-text ml-2">GEDS-CF</span>
+          </div>
         </div>
       </div>
 
       <!-- Timeframe -->
       <div class="p-4 border-b border-[rgba(255,255,255,0.1)]">
-        <h2 class="text-sm font-semibold text-[#4fc3f7] mb-3 flex items-center"><i class="far fa-clock mr-2"></i><span class="sidebar-text">Timeframe</span></h2>
+        <h2 class="text-sm font-semibold text-[#4fc3f7] mb-3 flex items-center section-title"><i class="far fa-clock mr-2"></i><span class="sidebar-text">Timeframe</span></h2>
         <div id="timeframeOptions" class="space-y-1">
-          <div class="timeframe-item active" data-timeframe="new">New</div>
-          <div class="timeframe-item" data-timeframe="settings">Settings</div>
-          <div class="timeframe-item" data-timeframe="help">Help</div>
+          <div class="timeframe-item active flex items-center" data-timeframe="new">
+            <i class="fas fa-plus w-6 text-center text-[#4fc3f7]"></i>
+            <span class="timeframe-text ml-2">New</span>
+          </div>
+          <div class="timeframe-item flex items-center" data-timeframe="settings">
+            <i class="fas fa-cog w-6 text-center text-[#4fc3f7]"></i>
+            <span class="timeframe-text ml-2">Settings</span>
+          </div>
+          <div class="timeframe-item flex items-center" data-timeframe="help">
+            <i class="fas fa-question-circle w-6 text-center text-[#4fc3f7]"></i>
+            <span class="timeframe-text ml-2">Help</span>
+          </div>
         </div>
       </div>
 
       <!-- Settings and Controls -->
-      <div class="p-4">
-         <h2 class="text-sm font-semibold text-[#4fc3f7] mb-3 flex items-center"><i class="fas fa-tools mr-2"></i><span class="sidebar-text">Controls</span></h2>
-         <div class="sidebar-text space-y-3">
+      <div class="p-4 mt-auto">
+         <h2 class="text-sm font-semibold text-[#4fc3f7] mb-3 flex items-center section-title"><i class="fas fa-tools mr-2"></i><span class="sidebar-text">Controls</span></h2>
+         <div class="sidebar-text space-y-3 hidden">
              <div>
                 <label for="dataSource" class="block text-xs text-gray-400 mb-1">Data Source</label>
                 <select id="dataSource" class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4fc3f7]">
@@ -179,8 +223,14 @@
              </div>
          </div>
          <div class="mt-4 flex space-x-2">
-             <button id="contrastToggle" class="w-1/2 flex items-center justify-center space-x-2 bg-black/20 p-2 rounded-lg text-sm hover:bg-white/10"><i class="fas fa-adjust"></i><span class="sidebar-text">Contrast</span></button>
-             <button id="textSizeToggle" class="w-1/2 flex items-center justify-center space-x-2 bg-black/20 p-2 rounded-lg text-sm hover:bg-white/10"><i class="fas fa-text-height"></i><span class="sidebar-text">Text</span></button>
+             <button id="contrastToggle" class="w-full flex items-center justify-center space-x-2 bg-black/20 p-2 rounded-lg text-sm hover:bg-white/10">
+               <i class="fas fa-adjust"></i>
+               <span class="sidebar-text hidden">Contrast</span>
+             </button>
+             <button id="textSizeToggle" class="w-full flex items-center justify-center space-x-2 bg-black/20 p-2 rounded-lg text-sm hover:bg-white/10">
+               <i class="fas fa-text-height"></i>
+               <span class="sidebar-text hidden">Text</span>
+             </button>
          </div>
       </div>
     </aside>
@@ -188,7 +238,7 @@
     <!-- Main Content -->
     <main class="flex-1 flex flex-col relative">
       <header class="flex items-center justify-between p-4 bg-black/10">
-        <h2 class="text-xl font-bold">Air Quality & Safety Prediction Map</h2>
+        <h2 class="text-xl font-bold">CSS: Air Quality & Safety Prediction Map</h2>
         <div class="flex items-center space-x-4">
           <div class="text-sm text-gray-300"><i class="far fa-calendar-alt mr-2"></i><span id="currentDate"></span></div>
           <button id="locateMe" class="p-2 rounded-full hover:bg-white/10" title="Locate Me"><i class="fas fa-location-arrow"></i></button>
@@ -197,6 +247,13 @@
       
       <!-- Map Container -->
       <div id="map" class="flex-1"></div>
+      
+      <!-- Layer Controls -->
+      <div class="layer-controls hidden" id="layerControls">
+        <div class="text-sm font-semibold text-[#4fc3f7] mb-2">Active Layer</div>
+        <div id="activeLayer" class="text-xs mb-2">None</div>
+        <button id="clearLayers" class="w-full bg-red-500/20 hover:bg-red-500/30 text-red-300">Clear Layers</button>
+      </div>
       
       <!-- Map Legend -->
       <div class="legend absolute bottom-5 left-5 bg-[rgba(22,43,62,0.8)] backdrop-blur-sm p-3 rounded-lg border border-white/10 shadow-lg z-10 w-64">
@@ -269,7 +326,7 @@
       <div id="settingsPage" class="absolute inset-0 bg-[rgba(22,43,62,0.95)] backdrop-blur-sm z-30 hidden transform transition-all duration-300">
         <div class="flex flex-col h-full">
           <div class="flex items-center justify-between p-4 border-b border-white/10">
-            <h2 class="text-xl font-bold text-[#4fc3f7]">Settings</h2>
+            <h2 class="text-xl font-bold text-[#4fc3f7]">CSS Settings</h2>
             <button id="closeSettings" class="p-2 rounded-full hover:bg-white/10"><i class="fas fa-times"></i></button>
           </div>
           <div class="flex-1 p-6 overflow-y-auto">
@@ -280,14 +337,21 @@
                   <div class="flex items-center justify-between">
                     <span>Dark Mode</span>
                     <label class="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" class="sr-only peer" checked>
+                      <input type="checkbox" id="darkModeToggle" class="sr-only peer" checked>
                       <div class="w-11 h-6 bg-gray-700 peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
                   <div class="flex items-center justify-between">
                     <span>High Contrast</span>
                     <label class="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" class="sr-only peer">
+                      <input type="checkbox" id="contrastToggleSetting" class="sr-only peer">
+                      <div class="w-11 h-6 bg-gray-700 peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span>Sidebar Auto-Collapse</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" id="autoCollapseToggle" class="sr-only peer" checked>
                       <div class="w-11 h-6 bg-gray-700 peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
@@ -300,14 +364,14 @@
                   <div class="flex items-center justify-between">
                     <span>AQI Alerts</span>
                     <label class="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" class="sr-only peer" checked>
+                      <input type="checkbox" id="aqiAlertsToggle" class="sr-only peer" checked>
                       <div class="w-11 h-6 bg-gray-700 peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
                   <div class="flex items-center justify-between">
                     <span>Hazard Warnings</span>
                     <label class="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" class="sr-only peer" checked>
+                      <input type="checkbox" id="hazardWarningsToggle" class="sr-only peer" checked>
                       <div class="w-11 h-6 bg-gray-700 peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
@@ -315,19 +379,22 @@
               </div>
               
               <div class="bg-black/20 p-4 rounded-lg">
-                <h3 class="text-lg font-semibold mb-3">Data Sources</h3>
+                <h3 class="text-lg font-semibold mb-3">Map Settings</h3>
                 <div class="space-y-3">
-                  <div class="flex items-center justify-between">
-                    <span>CAMS Global</span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" class="sr-only peer" checked>
-                      <div class="w-11 h-6 bg-gray-700 peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
+                  <div>
+                    <label for="defaultLayer" class="block text-sm mb-2">Default Map Layer</label>
+                    <select id="defaultLayer" class="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4fc3f7]">
+                      <option value="none">None (Base Map)</option>
+                      <option value="pm25">PM2.5</option>
+                      <option value="o3">Ozone</option>
+                      <option value="no2">Nitrogen Dioxide</option>
+                      <option value="so2">Sulfur Dioxide</option>
+                    </select>
                   </div>
                   <div class="flex items-center justify-between">
-                    <span>GEDS-CF</span>
+                    <span>Auto-refresh Data</span>
                     <label class="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" class="sr-only peer" checked>
+                      <input type="checkbox" id="autoRefreshToggle" class="sr-only peer" checked>
                       <div class="w-11 h-6 bg-gray-700 peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
@@ -342,19 +409,19 @@
       <div id="helpPage" class="absolute inset-0 bg-[rgba(22,43,62,0.95)] backdrop-blur-sm z-30 hidden transform transition-all duration-300">
         <div class="flex flex-col h-full">
           <div class="flex items-center justify-between p-4 border-b border-white/10">
-            <h2 class="text-xl font-bold text-[#4fc3f7]">Help & Information</h2>
+            <h2 class="text-xl font-bold text-[#4fc3f7]">CSS Help & Information</h2>
             <button id="closeHelp" class="p-2 rounded-full hover:bg-white/10"><i class="fas fa-times"></i></button>
           </div>
           <div class="flex-1 p-6 overflow-y-auto">
             <div class="max-w-3xl mx-auto space-y-6">
               <div class="bg-black/20 p-4 rounded-lg">
-                <h3 class="text-lg font-semibold mb-3 text-[#4fc3f7]">Using the Map</h3>
-                <p class="text-gray-300 mb-2">The interactive map displays real-time air quality data from various monitoring stations around the world.</p>
+                <h3 class="text-lg font-semibold mb-3 text-[#4fc3f7]">Using the CSS Map</h3>
+                <p class="text-gray-300 mb-2">The CSS (Cloener Safer Sites) interactive map displays real-time air quality data from various monitoring stations around the world.</p>
                 <ul class="list-disc pl-5 text-gray-300 space-y-1">
                   <li>Click on any marker to view detailed air quality information</li>
-                  <li>Use the search function to find specific locations</li>
-                  <li>Toggle between different pollutant layers using the sidebar</li>
-                  <li>Switch between heatmap and marker views</li>
+                  <li>Use the pollutant icons in the sidebar to toggle different data layers</li>
+                  <li>Click the clear layers button to return to the base map view</li>
+                  <li>Use the locate button to center the map on your current position</li>
                 </ul>
               </div>
               
@@ -423,10 +490,19 @@
       let map;
       let heatmapLayer;
       let markerLayer = L.layerGroup();
-      let activePollutant = 'pm25';
+      let activePollutant = null;
       let historyChart;
       const cachedData = {};
-      const apiBaseUrl = '/api/air-quality'; // Using a proxy endpoint
+      const apiBaseUrl = '/api/air-quality';
+      let settings = {
+        darkMode: true,
+        highContrast: false,
+        autoCollapse: true,
+        aqiAlerts: true,
+        hazardWarnings: true,
+        defaultLayer: 'none',
+        autoRefresh: true
+      };
 
       // --- DOM ELEMENTS ---
       const elements = {
@@ -451,6 +527,17 @@
         closeHelp: document.getElementById('closeHelp'),
         predictionModels: document.getElementById('predictionModels'),
         timeframeOptions: document.getElementById('timeframeOptions'),
+        layerControls: document.getElementById('layerControls'),
+        clearLayers: document.getElementById('clearLayers'),
+        activeLayer: document.getElementById('activeLayer'),
+        // Settings toggles
+        darkModeToggle: document.getElementById('darkModeToggle'),
+        contrastToggleSetting: document.getElementById('contrastToggleSetting'),
+        autoCollapseToggle: document.getElementById('autoCollapseToggle'),
+        aqiAlertsToggle: document.getElementById('aqiAlertsToggle'),
+        hazardWarningsToggle: document.getElementById('hazardWarningsToggle'),
+        defaultLayer: document.getElementById('defaultLayer'),
+        autoRefreshToggle: document.getElementById('autoRefreshToggle')
       };
 
       // --- INITIALIZATION ---
@@ -461,13 +548,14 @@
         setInterval(updateDateTime, 60000);
         populatePollutants();
         fetchInitialData();
+        loadSettings();
       }
 
       function initMap() {
         map = L.map('map', {
             center: [20, 0],
             zoom: 2,
-            zoomControl: false // Using custom controls
+            zoomControl: false
         });
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -479,12 +567,15 @@
           radius: 25,
           blur: 15, 
           maxZoom: 11,
-          max: 200, // Max PM2.5 value for scaling
+          max: 200,
           gradient: { 0.4: 'green', 0.65: 'yellow', 1: 'red' }
-        }).addTo(map);
+        });
         
         markerLayer.addTo(map);
-        map.removeLayer(markerLayer); // Default to heatmap only
+        
+        // Initially show only the base map without any layers
+        map.removeLayer(heatmapLayer);
+        map.removeLayer(markerLayer);
 
         map.on('click', onMapClick);
         map.on('moveend', fetchViewportData);
@@ -496,12 +587,15 @@
         elements.cardClose.addEventListener('click', () => hideElement(elements.locationCard));
         elements.searchInput.addEventListener('input', handleSearch);
         elements.locateMeBtn.addEventListener('click', locateUser);
-        elements.contrastToggle.addEventListener('click', () => document.body.classList.toggle('high-contrast'));
-        elements.textSizeToggle.addEventListener('click', () => document.body.classList.toggle('text-lg'));
+        elements.contrastToggle.addEventListener('click', toggleContrast);
+        elements.textSizeToggle.addEventListener('click', toggleTextSize);
         
         // New event listeners for nested pages
         elements.closeSettings.addEventListener('click', () => hideElement(elements.settingsPage));
         elements.closeHelp.addEventListener('click', () => hideElement(elements.helpPage));
+        
+        // Layer controls
+        elements.clearLayers.addEventListener('click', clearActiveLayers);
 
         // Event listeners for prediction models
         elements.predictionModels.addEventListener('click', (e) => {
@@ -509,7 +603,6 @@
           if(item) {
             document.querySelectorAll('.model-item').forEach(i => i.classList.remove('active'));
             item.classList.add('active');
-            // In a real app, you would update the data source based on the selected model
             console.log(`Selected prediction model: ${item.dataset.model}`);
           }
         });
@@ -521,6 +614,7 @@
             const timeframe = item.dataset.timeframe;
             if(timeframe === 'settings') {
               showElement(elements.settingsPage);
+              updateSettingsUI();
             } else if(timeframe === 'help') {
               showElement(elements.helpPage);
             } else if(timeframe === 'new') {
@@ -530,6 +624,36 @@
               console.log('Selected timeframe: New');
             }
           }
+        });
+
+        // Settings event listeners
+        elements.darkModeToggle.addEventListener('change', (e) => {
+          settings.darkMode = e.target.checked;
+          applySettings();
+        });
+        elements.contrastToggleSetting.addEventListener('change', (e) => {
+          settings.highContrast = e.target.checked;
+          applySettings();
+        });
+        elements.autoCollapseToggle.addEventListener('change', (e) => {
+          settings.autoCollapse = e.target.checked;
+          applySettings();
+        });
+        elements.aqiAlertsToggle.addEventListener('change', (e) => {
+          settings.aqiAlerts = e.target.checked;
+          applySettings();
+        });
+        elements.hazardWarningsToggle.addEventListener('change', (e) => {
+          settings.hazardWarnings = e.target.checked;
+          applySettings();
+        });
+        elements.defaultLayer.addEventListener('change', (e) => {
+          settings.defaultLayer = e.target.value;
+          applySettings();
+        });
+        elements.autoRefreshToggle.addEventListener('change', (e) => {
+          settings.autoRefresh = e.target.checked;
+          applySettings();
         });
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -545,11 +669,26 @@
         elements.pollutantsList.addEventListener('click', (e) => {
             const item = e.target.closest('.pollutant-item');
             if(item) {
-                document.querySelectorAll('.pollutant-item').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-                activePollutant = item.dataset.pollutant;
-                document.getElementById('legendTitle').textContent = `${item.querySelector('strong').textContent} (${item.dataset.unit})`;
-                updateMapVisualization();
+                const pollutant = item.dataset.pollutant;
+                
+                // Toggle behavior: if already active, deactivate it
+                if (activePollutant === pollutant) {
+                  item.classList.remove('active');
+                  activePollutant = null;
+                  clearActiveLayers();
+                } else {
+                  document.querySelectorAll('.pollutant-item').forEach(i => i.classList.remove('active'));
+                  item.classList.add('active');
+                  activePollutant = pollutant;
+                  updateMapVisualization();
+                  showElement(elements.layerControls);
+                  elements.activeLayer.textContent = item.querySelector('strong').textContent;
+                }
+                
+                // Auto-collapse sidebar if setting is enabled
+                if (settings.autoCollapse && !elements.sidebar.classList.contains('collapsed')) {
+                  toggleSidebar();
+                }
             }
         });
       }
@@ -557,11 +696,22 @@
       // --- UI & INTERACTIONS ---
 
       function toggleSidebar() {
-          const isCollapsed = elements.sidebar.classList.toggle('w-16');
+          const isCollapsed = elements.sidebar.classList.toggle('collapsed');
           elements.sidebar.classList.toggle('w-80');
-          elements.collapseIcon.classList.toggle('rotate-180');
+          elements.sidebar.classList.toggle('w-16');
+          elements.collapseIcon.classList.toggle('fa-chevron-right');
+          elements.collapseIcon.classList.toggle('fa-chevron-left');
           elements.logoText.classList.toggle('hidden');
-          elements.sidebarTexts.forEach(text => text.classList.toggle('hidden'));
+          
+          // Toggle visibility of text elements
+          document.querySelectorAll('.sidebar-text').forEach(el => el.classList.toggle('hidden'));
+          document.querySelectorAll('.section-title').forEach(el => el.classList.toggle('hidden'));
+          document.querySelectorAll('.model-text').forEach(el => el.classList.toggle('hidden'));
+          document.querySelectorAll('.timeframe-text').forEach(el => el.classList.toggle('hidden'));
+          document.querySelectorAll('.pollutant-text').forEach(el => el.classList.toggle('hidden'));
+          
+          // Toggle search bar visibility
+          document.querySelector('.p-4.hidden').classList.toggle('hidden');
       }
       
       function toggleMapDisplay(e) {
@@ -582,15 +732,15 @@
 
       function populatePollutants() {
           const pollutants = [
-              { id: 'pm25', name: 'Parteladee Matter (PM2.5)', unit: 'µg/m³', icon: 'fa-wind' },
-              { id: 'o3', name: 'Gigor (O₃)', unit: 'µg/m³', icon: 'fa-cloud' },
-              { id: 'no2', name: 'Nurocan Dioxide (NO₂)', unit: 'µg/m³', icon: 'fa-industry' },
-              { id: 'so2', name: 'Sulp-tar Bloxids (SO₂)', unit: 'µg/m³', icon: 'fa-smog' },
+              { id: 'pm25', name: 'PM2.5', unit: 'µg/m³', icon: 'fa-wind' },
+              { id: 'o3', name: 'Ozone (O₃)', unit: 'µg/m³', icon: 'fa-cloud' },
+              { id: 'no2', name: 'NO₂', unit: 'µg/m³', icon: 'fa-industry' },
+              { id: 'so2', name: 'SO₂', unit: 'µg/m³', icon: 'fa-smog' },
           ];
           elements.pollutantsList.innerHTML = pollutants.map(p => `
-              <li class="pollutant-item flex items-center p-2 rounded-md cursor-pointer hover:bg-white/5 ${p.id === 'pm25' ? 'active' : ''}" data-pollutant="${p.id}" data-unit="${p.unit}">
-                  <i class="fas ${p.icon} w-8 text-center text-[#4fc3f7]"></i>
-                  <div class="sidebar-text">
+              <li class="pollutant-item flex items-center p-2 rounded-md cursor-pointer hover:bg-white/5" data-pollutant="${p.id}" data-unit="${p.unit}">
+                  <i class="fas ${p.icon} w-6 text-center text-[#4fc3f7]"></i>
+                  <div class="pollutant-text ml-2">
                       <strong>${p.name}</strong>
                       <p class="text-xs text-gray-400">View on Map</p>
                   </div>
@@ -601,20 +751,78 @@
       const showElement = (el) => el.classList.remove('hidden');
       const hideElement = (el) => el.classList.add('hidden');
 
+      // --- SETTINGS MANAGEMENT ---
+      function loadSettings() {
+        const savedSettings = localStorage.getItem('css-settings');
+        if (savedSettings) {
+          settings = { ...settings, ...JSON.parse(savedSettings) };
+        }
+        applySettings();
+      }
+
+      function saveSettings() {
+        localStorage.setItem('css-settings', JSON.stringify(settings));
+      }
+
+      function updateSettingsUI() {
+        elements.darkModeToggle.checked = settings.darkMode;
+        elements.contrastToggleSetting.checked = settings.highContrast;
+        elements.autoCollapseToggle.checked = settings.autoCollapse;
+        elements.aqiAlertsToggle.checked = settings.aqiAlerts;
+        elements.hazardWarningsToggle.checked = settings.hazardWarnings;
+        elements.defaultLayer.value = settings.defaultLayer;
+        elements.autoRefreshToggle.checked = settings.autoRefresh;
+      }
+
+      function applySettings() {
+        // Apply dark mode
+        if (settings.darkMode) {
+          document.body.classList.remove('bg-white', 'text-gray-900');
+          document.body.classList.add('bg-gray-900', 'text-white');
+        } else {
+          document.body.classList.remove('bg-gray-900', 'text-white');
+          document.body.classList.add('bg-white', 'text-gray-900');
+        }
+        
+        // Apply high contrast
+        if (settings.highContrast) {
+          document.body.classList.add('high-contrast');
+        } else {
+          document.body.classList.remove('high-contrast');
+        }
+        
+        // Apply default layer
+        if (settings.defaultLayer !== 'none' && !activePollutant) {
+          const pollutantItem = document.querySelector(`[data-pollutant="${settings.defaultLayer}"]`);
+          if (pollutantItem) {
+            pollutantItem.click();
+          }
+        }
+        
+        saveSettings();
+      }
+
+      function toggleContrast() {
+        settings.highContrast = !settings.highContrast;
+        applySettings();
+      }
+
+      function toggleTextSize() {
+        document.body.classList.toggle('text-lg');
+      }
+
       // --- DATA FETCHING & HANDLING ---
       async function fetchData(lat, lng) {
         const cacheKey = `${lat.toFixed(2)},${lng.toFixed(2)}`;
         if (cachedData[cacheKey]) return cachedData[cacheKey];
 
         try {
-            // MOCKUP: This simulates a call to a secure backend proxy
-            // In a real app, this would be: `await fetch(`${apiBaseUrl}?lat=${lat}&lng=${lng}`);`
             const data = generateMockData(lat, lng);
             cachedData[cacheKey] = data;
             return data;
         } catch (error) {
             console.error("Failed to fetch data:", error);
-            return null; // Handle error gracefully
+            return null;
         }
       }
 
@@ -628,17 +836,15 @@
       }
 
       function fetchViewportData() {
-        // Fetch data for the current map view to populate the heatmap
         const bounds = map.getBounds();
         const center = bounds.getCenter();
-        fetchData(center.lat, center.lng).then(processApiData); // Fetch for center
-        // In a real app, you might fetch data for multiple points within the viewport
+        fetchData(center.lat, center.lng).then(processApiData);
       }
 
       function processApiData(data) {
           if (!data) return;
           const { lat, lng, aqi } = data.current;
-          const heatPoint = [lat, lng, aqi / 300]; // Normalize for heatmap intensity
+          const heatPoint = [lat, lng, aqi / 300];
           heatmapLayer.addLatLng(heatPoint);
 
           const marker = createMarker(data);
@@ -652,21 +858,31 @@
           Object.values(cachedData).forEach(data => {
               const value = data.current.pollutants[activePollutant] || data.current.aqi;
               let intensity = 0;
-              // Normalize intensity based on pollutant type
-              if (activePollutant === 'aqi') intensity = value / 300;
-              else if (activePollutant === 'pm25') intensity = value / 100;
-              else intensity = value / 50;
+              if (activePollutant === 'pm25') intensity = value / 100;
+              else if (activePollutant === 'o3') intensity = value / 200;
+              else if (activePollutant === 'no2') intensity = value / 100;
+              else if (activePollutant === 'so2') intensity = value / 50;
               
               heatData.push([data.current.lat, data.current.lng, intensity]);
               
               const marker = createMarker(data);
               markerLayer.addLayer(marker);
           });
+          
           heatmapLayer.setLatLngs(heatData);
+          map.addLayer(heatmapLayer);
+          map.addLayer(markerLayer);
+      }
+      
+      function clearActiveLayers() {
+        activePollutant = null;
+        document.querySelectorAll('.pollutant-item').forEach(i => i.classList.remove('active'));
+        map.removeLayer(heatmapLayer);
+        map.removeLayer(markerLayer);
+        hideElement(elements.layerControls);
       }
       
       // --- API MOCKUP ---
-      // This function generates realistic mock data on the fly.
       function generateMockData(lat, lng) {
         const baseAqi = Math.floor(Math.abs(Math.sin(lat) * 150 + Math.cos(lng) * 150));
         const current = {
@@ -677,7 +893,6 @@
             status: getAqiStatus(baseAqi).text,
             recommendation: getHealthRecommendations(baseAqi),
             pollutants: {
-                aqi: baseAqi,
                 pm25: Math.round(baseAqi * 0.7),
                 o3: Math.round(baseAqi * 0.5),
                 no2: Math.round(baseAqi * 0.3),
@@ -736,7 +951,6 @@
               hideElement(elements.searchResults);
               return;
           }
-          // Debounce search
           setTimeout(async () => {
               const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=5`);
               const results = await response.json();
@@ -777,7 +991,6 @@
           statusEl.style.color = status.textColor;
 
           document.getElementById('pollutantDetails').innerHTML = Object.entries(current.pollutants)
-            .filter(([key, _]) => key !== 'aqi')
             .map(([key, value]) => `
                 <div class="flex justify-between items-center"><span class="text-gray-400 uppercase">${key}</span> <strong>${value} µg/m³</strong></div>
             `).join('');
